@@ -1,0 +1,119 @@
+/*
+* Copyright 2015 Chad Voegele.
+* See LICENSE file for license details.
+*/
+
+#include <stdlib.h>
+#include <glib.h>
+
+#include "status_bar.h"
+#include "configs.h"
+
+#include "clock_monitor.h"
+#include "thinkpad_temp_monitor.h"
+#include "thinkpad_fan_monitor.h"
+#include "thinkpad_battery_monitor.h"
+#include "memory_monitor.h"
+#include "net_monitor.h"
+#include "dropbox_monitor.h"
+#include "sp500_monitor.h"
+#include "weather_monitor.h"
+
+void load_configs(GKeyFile* configs) {
+  GString* config_path = g_string_new(NULL);
+  char* path, *home;
+
+  if ((path = getenv("XDG_CONFIG_HOME")) != NULL) {
+    g_string_printf(config_path, "%s/status_bar.conf", path);
+  } else if ((home = getenv("HOME")) != NULL) {
+    g_string_printf(config_path, "%s/.config/status_bar.conf", home);
+  } else {
+    fprintf(stderr, "Either XDG_CONFIG_HOME or HOME must defined for config file.\n");
+    exit(EXIT_FAILURE);
+  }
+
+  GError* error = NULL;
+  if (!g_key_file_load_from_file(configs, config_path->str, G_KEY_FILE_NONE, &error)) {
+    fprintf(stderr, "%s: %s\n", error->message, config_path->str);
+    g_error_free(error);
+  }
+
+  g_string_free(config_path, TRUE);
+}
+
+void fail_on_error(GError* error) {
+  if (error != NULL) {
+    fprintf(stderr, "%s\n", error->message);
+    g_error_free(error);
+    exit(EXIT_FAILURE);
+  }
+}
+
+void init_monitors(GKeyFile* configs, struct monitor_refs* monitors, int* n_monitors) {
+  char** monitor_configs;
+  gsize lengths;
+  GError* error = NULL;
+  monitor_configs = g_key_file_get_string_list(configs, "configs", "monitors", &lengths, &error);
+  fail_on_error(error);
+
+  int i = 0;
+  for (i = 0; i < lengths; i++) {
+    monitors[i].monitor = convert_string_to_monitor(monitor_configs[i]);
+  }
+  g_strfreev(monitor_configs);
+  *n_monitors = lengths;
+}
+
+void build_dzen_str(GKeyFile* configs, GString* str) {
+  GError* error = NULL;
+  char* fg_color = g_key_file_get_string(configs, "configs", "fgcolor", &error);
+  fail_on_error(error);
+
+  error = NULL;
+  char* bg_color = g_key_file_get_string(configs, "configs", "bgcolor", &error);
+  fail_on_error(error);
+
+  error = NULL;
+  char* width = g_key_file_get_string(configs, "configs", "width", &error);
+  fail_on_error(error);
+
+  error = NULL;
+  char* font_size = g_key_file_get_string(configs, "configs", "font_size", &error);
+  fail_on_error(error);
+
+  g_string_printf(str, "dzen2 -fg \\%s -bg \\%s -h 19 -ta c -x 0 -w %s -fn \"-*-terminus-medium-*-*-*-%s-*-*-*-*-*-*-*\"",
+      fg_color,
+      bg_color,
+      width,
+      font_size);
+
+  g_free(fg_color);
+  g_free(bg_color);
+  g_free(width);
+  g_free(font_size);
+}
+
+void* (*convert_string_to_monitor(char* str))(struct monitor_refs*) {
+  if (strcmp("net", str) == 0) {
+    return net_monitor;
+  } else if (strcmp("clock", str) == 0) {
+    return clock_monitor;
+  } else if (strcmp("dropbox", str) == 0) {
+    return dropbox_monitor;
+  } else if (strcmp("memory", str) == 0) {
+    return memory_monitor;
+  } else if (strcmp("sp500", str) == 0) {
+    return sp500_monitor;
+  } else if (strcmp("thinkpad_battery", str) == 0) {
+    return thinkpad_battery_monitor;
+  } else if (strcmp("thinkpad_fan", str) == 0) {
+    return thinkpad_fan_monitor;
+  } else if (strcmp("thinkpad_temp", str) == 0) {
+    return thinkpad_temp_monitor;
+  } else if (strcmp("weather", str) == 0) {
+    return weather_monitor;
+  } else {
+    fprintf(stderr, "Monitor %s not found.\n", str);
+    exit(EXIT_FAILURE);
+  }
+}
