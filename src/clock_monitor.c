@@ -7,31 +7,34 @@
 #include <stdlib.h>
 #include <time.h>
 
-#include "monitor_utils.h"
 #include "clock_monitor.h"
 #include "status_bar.h"
 
-void* clock_monitor(struct monitor_refs* mr) {
-  struct clock_monitor m;
-  void* ptr;
-  ptr = monitor_loop(mr, &m, clock_init, clock_update_text,
-      clock_sleep_time, clock_close);
-  return ptr;
+#define MAX_TEXT_LENGTH 100
+
+struct monitor_fns clock_monitor_fns() {
+  struct monitor_fns f;
+  f.init = clock_init;
+  f.sleep_time = clock_sleep_time;
+  f.update_text = clock_update_text;
+  f.free = clock_free;
+
+  return f;
 }
 
-void clock_init(void* ptr1, void* ptr2) {
-  struct clock_monitor* m;
-  if ((m = (struct clock_monitor*)ptr2) != NULL) {
-    m->colon_on = TRUE;
-    m->str = malloc(MAX_TEXT_LENGTH*sizeof(char));
+void* clock_init(GString* bar_text, GMutex* mutex, GKeyFile* configs) {
+  struct clock_monitor* m = malloc(sizeof(struct clock_monitor));
 
-  } else {
-    fprintf(stderr, "clock monitor not received in init.\n");
-    exit(EXIT_FAILURE);
-  }
+  m->bar_text = bar_text;
+  m->mutex = mutex;
+
+  m->colon_on = TRUE;
+  m->str = malloc(MAX_TEXT_LENGTH*sizeof(char));
+
+  return m;
 }
 
-const char* clock_update_text(void* ptr) {
+gboolean clock_update_text(void* ptr) {
   struct clock_monitor* m;
   if ((m = (struct clock_monitor*)ptr) != NULL) {
     time_t rawtime;
@@ -48,7 +51,11 @@ const char* clock_update_text(void* ptr) {
     m->colon_on = !m->colon_on;
     strftime(m->str, MAX_TEXT_LENGTH, format_str, &timeinfo);
 
-    return m->str;
+    g_mutex_lock(m->mutex);
+    m->bar_text = g_string_assign(m->bar_text, m->str);
+    g_mutex_unlock(m->mutex);
+
+    return TRUE;
 
   } else {
     fprintf(stderr, "clock monitor not received in update.\n");
@@ -66,10 +73,11 @@ int clock_sleep_time(void* ptr) {
   }
 }
 
-void clock_close(void* ptr) {
+void clock_free(void* ptr) {
   struct clock_monitor* m;
   if ((m = (struct clock_monitor*)ptr) != NULL) {
     free(m->str);
+    free(m);
 
   } else {
     fprintf(stderr, "clock monitor not received in close.\n");

@@ -8,38 +8,39 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include "monitor_utils.h"
 #include "net_monitor.h"
 #include "status_bar.h"
 
-void* net_monitor(struct monitor_refs* mr) {
-  struct net_monitor m;
-  void* ptr;
-  ptr = monitor_loop(mr, &m, net_init, net_update_text,
-      net_sleep_time, net_close);
-  return ptr;
+struct monitor_fns net_monitor_fns() {
+  struct monitor_fns f;
+  f.init = net_init;
+  f.sleep_time = net_sleep_time;
+  f.update_text = net_update_text;
+  f.free = net_free;
+
+  return f;
 }
 
-void net_init(void* ptr1, void* ptr2) {
-  struct net_monitor* m;
-  if ((m = (struct net_monitor*)ptr2) != NULL) {
-    m->str = g_string_new(NULL);
+void* net_init(GString* bar_text, GMutex* mutex, GKeyFile* configs) {
+  struct net_monitor* m = malloc(sizeof(struct net_monitor));
 
-    m->rx = g_array_new(FALSE, FALSE, sizeof(GString*));
-    m->tx = g_array_new(FALSE, FALSE, sizeof(GString*));
+  m->bar_text = bar_text;
+  m->mutex = mutex;
 
-    find_interfaces(m->rx, m->tx);
+  m->str = g_string_new(NULL);
 
-    m->last_rx = total_bytes(m->rx);
-    m->last_tx = total_bytes(m->tx);
+  m->rx = g_array_new(FALSE, FALSE, sizeof(GString*));
+  m->tx = g_array_new(FALSE, FALSE, sizeof(GString*));
 
-  } else {
-    fprintf(stderr, "net monitor not received in init.\n");
-    exit(EXIT_FAILURE);
-  }
+  find_interfaces(m->rx, m->tx);
+
+  m->last_rx = total_bytes(m->rx);
+  m->last_tx = total_bytes(m->tx);
+
+  return m;
 }
 
-const char* net_update_text(void* ptr) {
+gboolean net_update_text(void* ptr) {
   struct net_monitor* m;
   if ((m = (struct net_monitor*)ptr) != NULL) {
     int this_rx = total_bytes(m->rx);
@@ -53,7 +54,11 @@ const char* net_update_text(void* ptr) {
 
     g_string_printf(m->str, "^i(/usr/share/status_bar/up.xbm)%d^i(/usr/share/status_bar/down.xbm)%d", tx_speed, rx_speed);
 
-    return m->str->str;
+    g_mutex_lock(m->mutex);
+    m->bar_text = g_string_assign(m->bar_text, m->str->str);
+    g_mutex_unlock(m->mutex);
+
+    return TRUE;
 
   } else {
     fprintf(stderr, "net monitor not received in update.\n");
@@ -71,7 +76,7 @@ int net_sleep_time(void* ptr) {
   }
 }
 
-void net_close(void* ptr) {
+void net_free(void* ptr) {
   struct net_monitor* m;
   if ((m = (struct net_monitor*)ptr) != NULL) {
     g_string_free(m->str, TRUE);
@@ -87,6 +92,8 @@ void net_close(void* ptr) {
 
     g_array_free(m->rx, TRUE);
     g_array_free(m->tx, TRUE);
+
+    free(m);
 
   } else {
     fprintf(stderr, "net monitor not received in close.\n");

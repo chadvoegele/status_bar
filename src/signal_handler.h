@@ -5,5 +5,4 @@
 
 #pragma once
 
-void term(int);
-void init_signal_handler();
+gboolean quit_loop(void*);

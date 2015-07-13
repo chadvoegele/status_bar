@@ -11,6 +11,9 @@
 #include "status_bar.h"
 
 struct dropbox_monitor {
+  GString* bar_text;
+  GMutex* mutex;
+
   struct sockaddr_un remote;
   int addr_len;
   char* status_req;
@@ -21,11 +24,11 @@ struct dropbox_monitor {
   GString* response;
 };
 
-void* dropbox_monitor(struct monitor_refs*);
-void dropbox_init(void*, void*);
-const char* dropbox_update_text(void*);
+struct monitor_fns dropbox_monitor_fns();
+void* dropbox_init(GString*, GMutex*, GKeyFile*);
+gboolean dropbox_update_text(void*);
 int dropbox_sleep_time(void*);
-void dropbox_close(void*);
+void dropbox_free(void*);
 
 void setup_sockaddr(struct sockaddr_un*, int*);
 int receive(int, GString*);

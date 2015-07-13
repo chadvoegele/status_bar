@@ -8,30 +8,31 @@
 #include <string.h>
 #include <glib.h>
 
-#include "monitor_utils.h"
 #include "status_bar.h"
 #include "thinkpad_battery_monitor.h"
 
-void* thinkpad_battery_monitor(struct monitor_refs* mr) {
-  struct thinkpad_battery_monitor m;
-  void* ptr;
-  ptr = monitor_loop(mr, &m, thinkpad_battery_init, thinkpad_battery_update_text,
-      thinkpad_battery_sleep_time, thinkpad_battery_close);
-  return ptr;
+struct monitor_fns thinkpad_battery_monitor_fns() {
+  struct monitor_fns f;
+  f.init = thinkpad_battery_init;
+  f.sleep_time = thinkpad_battery_sleep_time;
+  f.update_text = thinkpad_battery_update_text;
+  f.free = thinkpad_battery_free;
+
+  return f;
 }
 
-void thinkpad_battery_init(void* ptr1, void* ptr2) {
-  struct thinkpad_battery_monitor* m;
-  if ((m = (struct thinkpad_battery_monitor*)ptr2) != NULL) {
-    m->str = g_string_new(NULL);
+void* thinkpad_battery_init(GString* bar_text, GMutex* mutex, GKeyFile* configs) {
+  struct thinkpad_battery_monitor* m = malloc(sizeof(struct thinkpad_battery_monitor));
 
-  } else {
-    fprintf(stderr, "thinkpad_battery monitor not received in init.\n");
-    exit(EXIT_FAILURE);
-  }
+  m->bar_text = bar_text;
+  m->mutex = mutex;
+
+  m->str = g_string_new(NULL);
+
+  return m;
 }
 
-const char* thinkpad_battery_update_text(void* ptr) {
+gboolean thinkpad_battery_update_text(void* ptr) {
   struct thinkpad_battery_monitor* m;
   if ((m = (struct thinkpad_battery_monitor*)ptr) != NULL) {
     int full, now;
@@ -66,7 +67,12 @@ const char* thinkpad_battery_update_text(void* ptr) {
 
     fclose(battery_now_file);
     fclose(battery_full_file);
-    return m->str->str;
+
+    g_mutex_lock(m->mutex);
+    m->bar_text = g_string_assign(m->bar_text, m->str->str);
+    g_mutex_unlock(m->mutex);
+
+    return TRUE;
 
   } else {
     fprintf(stderr, "thinkpad_battery monitor not received in update.\n");
@@ -77,17 +83,18 @@ const char* thinkpad_battery_update_text(void* ptr) {
 int thinkpad_battery_sleep_time(void* ptr) {
   struct thinkpad_battery_monitor* m;
   if ((m = (struct thinkpad_battery_monitor*)ptr) != NULL) {
-    return 1;
+    return 300;
   } else {
     fprintf(stderr, "thinkpad_battery monitor not received in sleep_time.\n");
     exit(EXIT_FAILURE);
   }
 }
 
-void thinkpad_battery_close(void* ptr) {
+void thinkpad_battery_free(void* ptr) {
   struct thinkpad_battery_monitor* m;
   if ((m = (struct thinkpad_battery_monitor*)ptr) != NULL) {
     g_string_free(m->str, TRUE);
+    free(m);
 
   } else {
     fprintf(stderr, "thinkpad_battery monitor not received in close.\n");

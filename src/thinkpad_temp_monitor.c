@@ -9,29 +9,30 @@
 #include <glib.h>
 
 #include "status_bar.h"
-#include "monitor_utils.h"
 #include "thinkpad_temp_monitor.h"
 
-void* thinkpad_temp_monitor(struct monitor_refs* mr) {
-  struct thinkpad_temp_monitor m;
-  void* ptr;
-  ptr = monitor_loop(mr, &m, thinkpad_temp_init, thinkpad_temp_update_text,
-      thinkpad_temp_sleep_time, thinkpad_temp_close);
-  return ptr;
+struct monitor_fns thinkpad_temp_monitor_fns() {
+  struct monitor_fns f;
+  f.init = thinkpad_temp_init;
+  f.sleep_time = thinkpad_temp_sleep_time;
+  f.update_text = thinkpad_temp_update_text;
+  f.free = thinkpad_temp_free;
+
+  return f;
 }
 
-void thinkpad_temp_init(void* ptr1, void* ptr2) {
-  struct thinkpad_temp_monitor* m;
-  if ((m = (struct thinkpad_temp_monitor*)ptr2) != NULL) {
-    m->str = g_string_new(NULL);
+void* thinkpad_temp_init(GString* bar_text, GMutex* mutex, GKeyFile* configs) {
+  struct thinkpad_temp_monitor* m = malloc(sizeof(struct thinkpad_temp_monitor));
 
-  } else {
-    fprintf(stderr, "thinkpad_temp monitor not received in init.\n");
-    exit(EXIT_FAILURE);
-  }
+  m->bar_text = bar_text;
+  m->mutex = mutex;
+
+  m->str = g_string_new(NULL);
+
+  return m;
 }
 
-const char* thinkpad_temp_update_text(void* ptr) {
+gboolean thinkpad_temp_update_text(void* ptr) {
   struct thinkpad_temp_monitor* m;
   if ((m = (struct thinkpad_temp_monitor*)ptr) != NULL) {
     FILE* temp_file;
@@ -69,7 +70,11 @@ const char* thinkpad_temp_update_text(void* ptr) {
     }
     fclose(temp_file);
 
-    return m->str->str;
+    g_mutex_lock(m->mutex);
+    m->bar_text = g_string_assign(m->bar_text, m->str->str);
+    g_mutex_unlock(m->mutex);
+
+    return TRUE;
 
   } else {
     fprintf(stderr, "thinkpad_temp monitor not received in update.\n");
@@ -80,17 +85,18 @@ const char* thinkpad_temp_update_text(void* ptr) {
 int thinkpad_temp_sleep_time(void* ptr) {
   struct thinkpad_temp_monitor* m;
   if ((m = (struct thinkpad_temp_monitor*)ptr) != NULL) {
-    return 1;
+    return 5;
   } else {
     fprintf(stderr, "thinkpad_temp monitor not received in sleep_time.\n");
     exit(EXIT_FAILURE);
   }
 }
 
-void thinkpad_temp_close(void* ptr) {
+void thinkpad_temp_free(void* ptr) {
   struct thinkpad_temp_monitor* m;
   if ((m = (struct thinkpad_temp_monitor*)ptr) != NULL) {
     g_string_free(m->str, TRUE);
+    free(m);
 
   } else {
     fprintf(stderr, "thinkpad_temp monitor not received in close.\n");

@@ -5,6 +5,7 @@
 
 #include <stdlib.h>
 #include <glib.h>
+#include <string.h>
 
 #include "status_bar.h"
 #include "configs.h"
@@ -49,21 +50,6 @@ void fail_on_error(GError* error) {
   }
 }
 
-void init_monitors(GKeyFile* configs, struct monitor_refs* monitors, int* n_monitors) {
-  char** monitor_configs;
-  gsize lengths;
-  GError* error = NULL;
-  monitor_configs = g_key_file_get_string_list(configs, "configs", "monitors", &lengths, &error);
-  fail_on_error(error);
-
-  int i = 0;
-  for (i = 0; i < lengths; i++) {
-    monitors[i].monitor = convert_string_to_monitor(monitor_configs[i]);
-  }
-  g_strfreev(monitor_configs);
-  *n_monitors = lengths;
-}
-
 void build_dzen_str(GKeyFile* configs, GString* str) {
   GError* error = NULL;
   char* fg_color = g_key_file_get_string(configs, "configs", "fgcolor", &error);
@@ -93,25 +79,51 @@ void build_dzen_str(GKeyFile* configs, GString* str) {
   g_free(font_size);
 }
 
-void* (*convert_string_to_monitor(char* str))(struct monitor_refs*) {
+int get_one_char_width(GKeyFile* configs) {
+  GError* error = NULL;
+  int one_char_width = g_key_file_get_integer(configs, "configs", "one_char_width", &error);
+  fail_on_error(error);
+
+  return one_char_width;
+}
+
+void init_monitors(GKeyFile* configs, GArray** fns) {
+  char** monitor_configs;
+  gsize lengths;
+  GError* error = NULL;
+  monitor_configs = g_key_file_get_string_list(configs, "configs", "monitors", &lengths, &error);
+  fail_on_error(error);
+
+  *fns = g_array_sized_new(FALSE, FALSE, sizeof(struct monitor_fns), lengths);
+
+  int i = 0;
+  for (i = 0; i < lengths; i++) {
+    struct monitor_fns fn = convert_string_to_monitor_fns(monitor_configs[i]);
+    g_array_append_val(*fns, fn);
+  }
+
+  g_strfreev(monitor_configs);
+}
+
+struct monitor_fns convert_string_to_monitor_fns(char* str) {
   if (strcmp("net", str) == 0) {
-    return net_monitor;
+    return net_monitor_fns();
   } else if (strcmp("clock", str) == 0) {
-    return clock_monitor;
+    return clock_monitor_fns();
   } else if (strcmp("dropbox", str) == 0) {
-    return dropbox_monitor;
+    return dropbox_monitor_fns();
   } else if (strcmp("memory", str) == 0) {
-    return memory_monitor;
+    return memory_monitor_fns();
   } else if (strcmp("sp500", str) == 0) {
-    return sp500_monitor;
+    return sp500_monitor_fns();
   } else if (strcmp("thinkpad_battery", str) == 0) {
-    return thinkpad_battery_monitor;
+    return thinkpad_battery_monitor_fns();
   } else if (strcmp("thinkpad_fan", str) == 0) {
-    return thinkpad_fan_monitor;
+    return thinkpad_fan_monitor_fns();
   } else if (strcmp("thinkpad_temp", str) == 0) {
-    return thinkpad_temp_monitor;
+    return thinkpad_temp_monitor_fns();
   } else if (strcmp("weather", str) == 0) {
-    return weather_monitor;
+    return weather_monitor_fns();
   } else {
     fprintf(stderr, "Monitor %s not found.\n", str);
     exit(EXIT_FAILURE);

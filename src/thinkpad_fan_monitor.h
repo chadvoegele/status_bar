@@ -8,11 +8,14 @@
 #include "status_bar.h"
 
 struct thinkpad_fan_monitor {
+  GString* bar_text;
+  GMutex* mutex;
+
   GString* str;
 };
 
-void* thinkpad_fan_monitor(struct monitor_refs*);
-void thinkpad_fan_init(void*, void*);
-const char* thinkpad_fan_update_text(void*);
+struct monitor_fns thinkpad_fan_monitor_fns();
+void* thinkpad_fan_init(GString*, GMutex*, GKeyFile*);
+gboolean thinkpad_fan_update_text(void*);
 int thinkpad_fan_sleep_time(void*);
-void thinkpad_fan_close(void*);
+void thinkpad_fan_free(void*);

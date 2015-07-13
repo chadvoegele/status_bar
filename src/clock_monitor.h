@@ -10,12 +10,15 @@
 #include "status_bar.h"
 
 struct clock_monitor {
+  GString* bar_text;
+  GMutex* mutex;
+
   gboolean colon_on;
   char* str;
 };
 
-void* clock_monitor(struct monitor_refs*);
-void clock_init(void*, void*);
-const char* clock_update_text(void*);
+struct monitor_fns clock_monitor_fns();
+void* clock_init(GString*, GMutex*, GKeyFile*);
+gboolean clock_update_text(void*);
 int clock_sleep_time(void*);
-void clock_close(void*);
+void clock_free(void*);

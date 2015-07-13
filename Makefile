@@ -16,11 +16,11 @@ SRC=$(wildcard ${SRCDIR}/*.c)
 OBJS=$(patsubst ${SRCDIR}/%.c,${BINDIR}/%.o,$(SRC))
 
 ${BINDIR}/${PROG_NAME}: ${OBJS}
-	@${CXX} ${LIBS} ${OBJS}  -o $@
+	@${CXX} ${LIBS} ${OBJS} -o $@
 
 $(OBJS): $(BINDIR)/%.o : $(SRCDIR)/%.c
 	@mkdir -p ${BINDIR}
-	@${CXX} ${CXX_FLAGS} ${INCLUDES} -c $< -o $@
+	@${CXX} ${CXX_FLAGS} ${INCLUDES} -O3 -c $< -o $@
 
 clean:
 	rm bin/*

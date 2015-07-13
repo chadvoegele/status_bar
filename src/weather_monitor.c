@@ -9,48 +9,47 @@
 #include <string.h>
 
 #include "weather_monitor.h"
-#include "monitor_utils.h"
 #include "http_download.h"
 #include "status_bar.h"
 #include "configs.h"
 
-void* weather_monitor(struct monitor_refs* mr) {
-  struct weather_monitor m;
-  void* ptr;
-  ptr = monitor_loop(mr, &m, weather_init, weather_update_text,
-      weather_sleep_time, weather_close);
-  return ptr;
+struct monitor_fns weather_monitor_fns() {
+  struct monitor_fns f;
+  f.init = weather_init;
+  f.sleep_time = weather_sleep_time;
+  f.update_text = weather_update_text;
+  f.free = weather_free;
+
+  return f;
 }
 
-void weather_init(void* ptr1, void* ptr2) {
-  struct weather_monitor* m;
-  struct monitor_refs* mr;
-  if ((m = (struct weather_monitor*)ptr2) != NULL
-      && (mr = (struct monitor_refs*)ptr1) != NULL) {
-    GError* error = NULL;
-    char* weather_loc = g_key_file_get_string(
-        mr->configs, "configs", "weather_loc", &error);
-    fail_on_error(error);
+void* weather_init(GString* bar_text, GMutex* mutex, GKeyFile* configs) {
+  struct weather_monitor* m = malloc(sizeof(struct weather_monitor));
 
-    m->request_str = g_string_new(NULL);
-    g_string_printf(m->request_str,
-        "http://w1.weather.gov/xml/current_obs/%s.xml", weather_loc);
-    g_free(weather_loc);
+  m->bar_text = bar_text;
+  m->mutex = mutex;
 
-    m->res = g_string_new(NULL);
-    m->curl = curl_easy_init();
-    m->icon = "^i(/usr/share/status_bar/temp.xbm)";
+  GError* error = NULL;
+  char* weather_loc = g_key_file_get_string(
+      configs, "configs", "weather_loc", &error);
+  fail_on_error(error);
 
-    m->err = malloc(strlen(m->icon) + 1);
-    sprintf(m->err, "%s!", m->icon);
+  m->request_str = g_string_new(NULL);
+  g_string_printf(m->request_str,
+      "http://w1.weather.gov/xml/current_obs/%s.xml", weather_loc);
+  g_free(weather_loc);
 
-  } else {
-    fprintf(stderr, "Weather monitor not received in init or monitor_refs not recevied in init.\n");
-    exit(EXIT_FAILURE);
-  }
+  m->res = g_string_new(NULL);
+  m->curl = curl_easy_init();
+  m->icon = "^i(/usr/share/status_bar/temp.xbm)";
+
+  m->err = malloc(strlen(m->icon) + 1);
+  sprintf(m->err, "%s!", m->icon);
+
+  return m;
 }
 
-const char* weather_update_text(void* ptr) {
+gboolean weather_update_text(void* ptr) {
   struct weather_monitor* m;
   if ((m = (struct weather_monitor*)ptr) != NULL) {
     char* output;
@@ -63,7 +62,12 @@ const char* weather_update_text(void* ptr) {
       output = m->err;
     }
 
-    return output;
+    g_mutex_lock(m->mutex);
+    m->bar_text = g_string_assign(m->bar_text, output);
+    g_mutex_unlock(m->mutex);
+
+    return TRUE;
+
   } else {
     fprintf(stderr, "Weather monitor not received in update.\n");
     exit(EXIT_FAILURE);
@@ -80,13 +84,15 @@ int weather_sleep_time(void* ptr) {
   }
 }
 
-void weather_close(void* ptr) {
+void weather_free(void* ptr) {
   struct weather_monitor* m;
   if ((m = (struct weather_monitor*)ptr) != NULL) {
     free(m->err);
     g_string_free(m->res, TRUE);
     g_string_free(m->request_str, TRUE);
     curl_easy_cleanup(m->curl);
+
+    free(m);
 
   } else {
     fprintf(stderr, "Weather monitor not received in close.\n");

@@ -10,6 +10,9 @@
 #include "status_bar.h"
 
 struct sp500_monitor {
+  GString* bar_text;
+  GMutex* mutex;
+
   GString* request_str;
   char* err;
   char* icon;
@@ -17,10 +20,10 @@ struct sp500_monitor {
   CURL* curl;
 };
 
-void* sp500_monitor(struct monitor_refs*);
-void sp500_init(void*, void*);
-const char* sp500_update_text(void*);
+struct monitor_fns sp500_monitor_fns();
+void* sp500_init(GString*, GMutex*, GKeyFile*);
+gboolean sp500_update_text(void*);
 int sp500_sleep_time(void*);
-void sp500_close(void*);
+void sp500_free(void*);
 
 int format_price(GString*, char*);

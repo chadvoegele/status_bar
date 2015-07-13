@@ -9,41 +9,40 @@
 #include <curl/curl.h>
 
 #include "status_bar.h"
-#include "monitor_utils.h"
 #include "sp500_monitor.h"
 #include "http_download.h"
 
-void* sp500_monitor(struct monitor_refs* mr) {
-  struct sp500_monitor m;
-  void* ptr;
-  ptr = monitor_loop(mr, &m, sp500_init, sp500_update_text,
-      sp500_sleep_time, sp500_close);
-  return ptr;
+struct monitor_fns sp500_monitor_fns() {
+  struct monitor_fns f;
+  f.init = sp500_init;
+  f.sleep_time = sp500_sleep_time;
+  f.update_text = sp500_update_text;
+  f.free = sp500_free;
+
+  return f;
 }
 
-void sp500_init(void* ptr1, void* ptr2) {
-  struct sp500_monitor* m;
-  struct monitor_refs* mr;
-  if ((m = (struct sp500_monitor*)ptr2) != NULL
-      && (mr = (struct monitor_refs*)ptr1) != NULL) {
-    m->request_str = g_string_new(NULL);
-    g_string_printf(m->request_str,
-        "http://download.finance.yahoo.com/d/quotes.csv?s=%%5EGSPC&f=l1c");
+void* sp500_init(GString* bar_text, GMutex* mutex, GKeyFile* configs) {
+  struct sp500_monitor* m = malloc(sizeof(struct sp500_monitor));
 
-    m->res = g_string_new(NULL);
-    m->curl = curl_easy_init();
-    m->icon = "^i(/usr/share/status_bar/load.xbm)";
+  m->bar_text = bar_text;
+  m->mutex = mutex;
 
-    m->err = malloc(strlen(m->icon) + 1);
-    sprintf(m->err, "%s!", m->icon);
+  m->request_str = g_string_new(NULL);
+  g_string_printf(m->request_str,
+      "http://download.finance.yahoo.com/d/quotes.csv?s=%%5EGSPC&f=l1c");
 
-  } else {
-    fprintf(stderr, "SP500 monitor not received in init or monitor_refs not recevied in init.\n");
-    exit(EXIT_FAILURE);
-  }
+  m->res = g_string_new(NULL);
+  m->curl = curl_easy_init();
+  m->icon = "^i(/usr/share/status_bar/load.xbm)";
+
+  m->err = malloc(strlen(m->icon) + 1);
+  sprintf(m->err, "%s!", m->icon);
+
+  return m;
 }
 
-const char* sp500_update_text(void* ptr) {
+gboolean sp500_update_text(void* ptr) {
   struct sp500_monitor* m;
   if ((m = (struct sp500_monitor*)ptr) != NULL) {
     CURLcode code = download_data(m->curl, m->request_str->str, m->res);
@@ -55,7 +54,11 @@ const char* sp500_update_text(void* ptr) {
       output = m->err;
     }
 
-    return output;
+    g_mutex_lock(m->mutex);
+    m->bar_text = g_string_assign(m->bar_text, output);
+    g_mutex_unlock(m->mutex);
+
+    return TRUE;
 
   } else {
     fprintf(stderr, "sp500 monitor not received in update_text.\n");
@@ -73,13 +76,14 @@ int sp500_sleep_time(void* ptr) {
   }
 }
 
-void sp500_close(void* ptr) {
+void sp500_free(void* ptr) {
   struct sp500_monitor* m;
   if ((m = (struct sp500_monitor*)ptr) != NULL) {
     free(m->err);
     g_string_free(m->res, TRUE);
     g_string_free(m->request_str, TRUE);
     curl_easy_cleanup(m->curl);
+    free(m);
 
   } else {
     fprintf(stderr, "sp500 monitor not received in close.\n");

@@ -9,31 +9,33 @@
 #include <string.h>
 
 #include "memory_monitor.h"
-#include "monitor_utils.h"
 #include "status_bar.h"
 
 #define MAX_MEMINFO_LENGTH 100
 
-void* memory_monitor(struct monitor_refs* mr) {
-  struct memory_monitor m;
-  void* ptr;
-  ptr = monitor_loop(mr, &m, memory_init, memory_update_text,
-      memory_sleep_time, memory_close);
-  return ptr;
+struct monitor_fns memory_monitor_fns() {
+  struct monitor_fns f;
+  f.init = memory_init;
+  f.sleep_time = memory_sleep_time;
+  f.update_text = memory_update_text;
+  f.free = memory_free;
+
+  return f;
 }
 
-void memory_init(void* ptr1, void* ptr2) {
-  struct memory_monitor* m;
-  if ((m = (struct memory_monitor*)ptr2) != NULL) {
-    m->str = g_string_new(NULL);
 
-  } else {
-    fprintf(stderr, "memory monitor not received in init.\n");
-    exit(EXIT_FAILURE);
-  }
+void* memory_init(GString* bar_text, GMutex* mutex, GKeyFile* configs) {
+  struct memory_monitor* m = malloc(sizeof(struct memory_monitor));
+
+  m->bar_text = bar_text;
+  m->mutex = mutex;
+
+  m->str = g_string_new(NULL);
+
+  return m;
 }
 
-const char* memory_update_text(void* ptr) {
+gboolean memory_update_text(void* ptr) {
   struct memory_monitor* m;
   if ((m = (struct memory_monitor*)ptr) != NULL) {
     char* mem_file_path = "/proc/meminfo";
@@ -63,7 +65,12 @@ const char* memory_update_text(void* ptr) {
     }
 
     fclose(mem_file);
-    return m->str->str;
+
+    g_mutex_lock(m->mutex);
+    m->bar_text = g_string_assign(m->bar_text, m->str->str);
+    g_mutex_unlock(m->mutex);
+
+    return TRUE;
 
   } else {
     fprintf(stderr, "memory monitor not received in update.\n");
@@ -74,17 +81,18 @@ const char* memory_update_text(void* ptr) {
 int memory_sleep_time(void* ptr) {
   struct memory_monitor* m;
   if ((m = (struct memory_monitor*)ptr) != NULL) {
-    return 1;
+    return 30;
   } else {
     fprintf(stderr, "memory monitor not received in sleep_time.\n");
     exit(EXIT_FAILURE);
   }
 }
 
-void memory_close(void* ptr) {
+void memory_free(void* ptr) {
   struct memory_monitor* m;
   if ((m = (struct memory_monitor*)ptr) != NULL) {
     g_string_free(m->str, TRUE);
+    free(m);
 
   } else {
     fprintf(stderr, "memory monitor not received in close.\n");

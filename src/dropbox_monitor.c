@@ -10,40 +10,41 @@
 #include <sys/socket.h>
 #include <sys/un.h>
 
-#include "monitor_utils.h"
 #include "status_bar.h"
 #include "dropbox_monitor.h"
 
-void* dropbox_monitor(struct monitor_refs* mr) {
-  struct dropbox_monitor m;
-  void* ptr;
-  ptr = monitor_loop(mr, &m, dropbox_init, dropbox_update_text,
-      dropbox_sleep_time, dropbox_close);
-  return ptr;
+struct monitor_fns dropbox_monitor_fns() {
+  struct monitor_fns f;
+  f.init = dropbox_init;
+  f.sleep_time = dropbox_sleep_time;
+  f.update_text = dropbox_update_text;
+  f.free = dropbox_free;
+
+  return f;
 }
 
-void dropbox_init(void* mr, void* ptr) {
-  struct dropbox_monitor* m;
-  if ((m = (struct dropbox_monitor*)ptr) != NULL) {
-    setup_sockaddr(&m->remote, &m->addr_len);
-    m->status_req = "get_dropbox_status\ndone\n";
-    m->icon = "^i(/usr/share/status_bar/dropbox.xbm)";
+void* dropbox_init(GString* bar_text, GMutex* mutex, GKeyFile* configs) {
+  struct dropbox_monitor* m = malloc(sizeof(struct dropbox_monitor));
 
-    m->err = malloc(strlen(m->icon) + 1);
-    sprintf(m->err, "%s!", m->icon);
+  m->bar_text = bar_text;
+  m->mutex = mutex;
 
-    m->socket = -1;
-    m->conn = -1;
+  setup_sockaddr(&m->remote, &m->addr_len);
+  m->status_req = "get_dropbox_status\ndone\n";
+  m->icon = "^i(/usr/share/status_bar/dropbox.xbm)";
 
-    m->response = g_string_new(NULL);
+  m->err = malloc(strlen(m->icon) + 1);
+  sprintf(m->err, "%s!", m->icon);
 
-  } else {
-    fprintf(stderr, "Dropbox monitor not received in init.\n");
-    exit(EXIT_FAILURE);
-  }
+  m->socket = -1;
+  m->conn = -1;
+
+  m->response = g_string_new(NULL);
+
+  return m;
 }
 
-const char* dropbox_update_text(void* ptr) {
+gboolean dropbox_update_text(void* ptr) {
   struct dropbox_monitor* m;
   if ((m = (struct dropbox_monitor*)ptr) != NULL) {
     char* output;
@@ -78,7 +79,13 @@ const char* dropbox_update_text(void* ptr) {
         }
       }
     }
-    return output;
+
+    g_mutex_lock(m->mutex);
+    m->bar_text = g_string_assign(m->bar_text, output);
+    g_mutex_unlock(m->mutex);
+
+    return TRUE;
+
   } else {
     fprintf(stderr, "Dropbox monitor not received in update.\n");
     exit(EXIT_FAILURE);
@@ -95,7 +102,7 @@ int dropbox_sleep_time(void* ptr) {
   }
 }
 
-void dropbox_close(void* ptr) {
+void dropbox_free(void* ptr) {
   struct dropbox_monitor* m;
   if ((m = (struct dropbox_monitor*)ptr) != NULL) {
     free(m->err);
@@ -105,6 +112,8 @@ void dropbox_close(void* ptr) {
     }
 
     g_string_free(m->response, TRUE);
+    free(m);
+
   } else {
     fprintf(stderr, "Dropbox monitor not received in close.\n");
     exit(EXIT_FAILURE);

@@ -11,18 +11,21 @@
 #include "status_bar.h"
 
 struct weather_monitor {
-  GString* request_str;
-  char* err;
-  char* icon;
+  GString* bar_text;
+  GMutex* mutex;
+
   GString* res;
+  char* err;
+  GString* request_str;
+  char* icon;
   CURL* curl;
 };
 
-void* weather_monitor(struct monitor_refs*);
-void weather_init(void*, void*);
-const char* weather_update_text(void*);
+struct monitor_fns weather_monitor_fns();
+void* weather_init(GString*, GMutex*, GKeyFile*);
+gboolean weather_update_text(void*);
 int weather_sleep_time(void*);
-void weather_close(void*);
+void weather_free(void*);
 
 int format_output(GString*, char*);
 int parse_xml_str(char*, const char*, const char*);

@@ -8,30 +8,34 @@
 #include <glib.h>
 #include <stdio.h>
 
-#define MAX_MONITORS 20
-#define MAX_TEXT_LENGTH 100
-
 // https://airtower.wordpress.com/2010/06/16/catch-sigterm-exit-gracefully/
 extern volatile sig_atomic_t is_running_global;
 
+struct monitor_fns {
+  void* (*init)(GString*, GMutex*, GKeyFile*);
+  int (*sleep_time)(void*);
+  gboolean (*update_text)(void*);
+  void (*free)(void*);
+};
+
 struct monitor_refs {
-  GKeyFile* configs;
+  struct monitor_fns fns;
+  GString* text;
   GMutex mutex;
-  char text[MAX_TEXT_LENGTH];
-  void* (*monitor)(struct monitor_refs*);
+  void* monitor;
 };
 
 struct status_bar {
-  int n_monitors;
   FILE* dzen_pipe;
   GKeyFile* configs;
-  struct monitor_refs monitors[MAX_MONITORS];
+  int n_monitors;
+  int one_char_width;
+  struct monitor_refs* monitors;
+  GMainLoop* loop;
 };
 
 int status_bar();
 void init_status_bar(struct status_bar*);
 void run_status_bar(struct status_bar*);
+gboolean update_status_bar(void*);
 void close_status_bar(struct status_bar*);
-void init_signal_handler();
-void term(int);
-void* thread_fun(void*);
