@@ -20,8 +20,4 @@ build() {
 package() {
   cd "$srcdir/status_bar"
   make PREFIX=/usr DESTDIR="$pkgdir" install
-
-  for file in $(find res/*.xbm); do
-    install -Dm644 ${file} "${pkgdir}/usr/share/status_bar/$(basename ${file})"
-  done
 }
