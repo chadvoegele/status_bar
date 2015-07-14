@@ -67,7 +67,7 @@ void build_dzen_str(GKeyFile* configs, GString* str) {
   char* font_size = g_key_file_get_string(configs, "configs", "font_size", &error);
   fail_on_error(error);
 
-  g_string_printf(str, "dzen2 -fg \\%s -bg \\%s -h 19 -ta c -x 0 -w %s -fn \"-*-terminus-medium-*-*-*-%s-*-*-*-*-*-*-*\"",
+  g_string_printf(str, "lemonbar -F \\%s -B \\%s -g \"%sx19+0+0\" -f \"-*-terminus-medium-*-*-*-%s-*-*-*-*-*-*-*\" -f \"-*-ionicons-medium-*-*-*-17-*-*-*-*-*-*-*\"",
       fg_color,
       bg_color,
       width,

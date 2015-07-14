@@ -59,10 +59,10 @@ gboolean thinkpad_battery_update_text(void* ptr) {
     }
 
     if (n_full == 1 && n_now == 1) {
-      g_string_printf(m->str, "^i(/usr/share/status_bar/power-bat.xbm)%d%%",
+      g_string_printf(m->str, "%d%%",
           (int)(100.0*now/full));
     } else {
-      g_string_printf(m->str, "^i(/usr/share/status_bar/power-bat.xbm)!");
+      g_string_printf(m->str, "!");
     }
 
     fclose(battery_now_file);

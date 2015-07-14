@@ -59,9 +59,9 @@ gboolean memory_update_text(void* ptr) {
     int usage_pct = 100.0 * active / total;
 
     if (total != -1) {
-      g_string_printf(m->str, "^i(/usr/share/status_bar/mem.xbm)%d%%", usage_pct);
+      g_string_printf(m->str, "%d%%", usage_pct);
     } else {
-      g_string_printf(m->str, "^i(/usr/share/status_bar/mem.xbm)!");
+      g_string_printf(m->str, "!");
     }
 
     fclose(mem_file);

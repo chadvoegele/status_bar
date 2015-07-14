@@ -50,10 +50,10 @@ gboolean thinkpad_fan_update_text(void* ptr) {
       n_read = fscanf(fan_file, "%*s %*s %*s %d", &speed);
 
     if (n_read == 1) {
-      g_string_printf(m->str, "^i(/usr/share/status_bar/fan.xbm)%d", speed);
+      g_string_printf(m->str, "%d", speed);
     }
     else {
-      g_string_printf(m->str, "^i(/usr/share/status_bar/fan.xbm)!");
+      g_string_printf(m->str, "!");
     }
 
     fclose(fan_file);

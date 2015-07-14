@@ -34,7 +34,7 @@ void* sp500_init(GString* bar_text, GMutex* mutex, GKeyFile* configs) {
 
   m->res = g_string_new(NULL);
   m->curl = curl_easy_init();
-  m->icon = "^i(/usr/share/status_bar/load.xbm)";
+  m->icon = "";
 
   m->err = malloc(strlen(m->icon) + 1);
   sprintf(m->err, "%s!", m->icon);

@@ -56,7 +56,7 @@ gboolean thinkpad_temp_update_text(void* ptr) {
     }
 
     if (n_read == 7) {
-      g_string_printf(m->str, "^i(/usr/share/status_bar/cpu.xbm)%d %d %d %d %d %d %d",
+      g_string_printf(m->str, "%d %d %d %d %d %d %d",
           temps[0],
           temps[1],
           temps[2],
@@ -66,7 +66,7 @@ gboolean thinkpad_temp_update_text(void* ptr) {
           temps[6]);
 
     } else {
-      g_string_printf(m->str, "^i(/usr/share/status_bar/cpu.xbm)!");
+      g_string_printf(m->str, "!");
     }
     fclose(temp_file);
 

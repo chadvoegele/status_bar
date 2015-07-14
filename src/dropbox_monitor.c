@@ -31,7 +31,7 @@ void* dropbox_init(GString* bar_text, GMutex* mutex, GKeyFile* configs) {
 
   setup_sockaddr(&m->remote, &m->addr_len);
   m->status_req = "get_dropbox_status\ndone\n";
-  m->icon = "^i(/usr/share/status_bar/dropbox.xbm)";
+  m->icon = "";
 
   m->err = malloc(strlen(m->icon) + 1);
   sprintf(m->err, "%s!", m->icon);

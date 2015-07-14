@@ -103,10 +103,8 @@ gboolean update_status_bar(void* ptr) {
 
     mr = &status_bar->monitors[status_bar->n_monitors-1];
     g_mutex_lock(&mr->mutex);
-    int last_length = strlen(mr->text->str);
-    int last_length_pixels = -last_length*status_bar->one_char_width;
-    g_string_append_printf(output, "^p(_RIGHT)^p(%d)%s",
-        last_length_pixels, mr->text->str);
+    g_string_append_printf(output, "%%{r}%s",
+        mr->text->str);
     g_mutex_unlock(&mr->mutex);
 
     fprintf(status_bar->dzen_pipe, "%s\n", output->str);
