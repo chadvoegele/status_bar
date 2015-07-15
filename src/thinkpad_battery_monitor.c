@@ -9,6 +9,7 @@
 #include <glib.h>
 
 #include "status_bar.h"
+#include "configs.h"
 #include "thinkpad_battery_monitor.h"
 
 struct monitor_fns thinkpad_battery_monitor_fns() {
@@ -26,6 +27,20 @@ void* thinkpad_battery_init(GString* bar_text, GMutex* mutex, GKeyFile* configs)
 
   m->bar_text = bar_text;
   m->mutex = mutex;
+
+  GError* error = NULL;
+  char* alert_fgcolor = g_key_file_get_string(
+      configs, "configs", "alert_fgcolor", &error);
+  fail_on_error(error);
+  m->alert_fgcolor = g_string_new(alert_fgcolor);
+  g_free(alert_fgcolor);
+
+  error = NULL;
+  char* alert_bgcolor = g_key_file_get_string(
+      configs, "configs", "alert_bgcolor", &error);
+  fail_on_error(error);
+  m->alert_bgcolor = g_string_new(alert_bgcolor);
+  g_free(alert_bgcolor);
 
   m->str = g_string_new(NULL);
 
@@ -59,8 +74,13 @@ gboolean thinkpad_battery_update_text(void* ptr) {
     }
 
     if (n_full == 1 && n_now == 1) {
-      g_string_printf(m->str, "%d%%",
-          (int)(100.0*now/full));
+      int battpct = (int)(100.0*now/full);
+      if (battpct <= 10) {
+        g_string_printf(m->str, "%%{B%s}%%{F%s}%d%%%%{B-}%%{F-}",
+            m->alert_bgcolor->str, m->alert_fgcolor->str, battpct);
+      } else {
+        g_string_printf(m->str, "%d%%", battpct);
+      }
     } else {
       g_string_printf(m->str, "!");
     }
@@ -94,6 +114,7 @@ void thinkpad_battery_free(void* ptr) {
   struct thinkpad_battery_monitor* m;
   if ((m = (struct thinkpad_battery_monitor*)ptr) != NULL) {
     g_string_free(m->str, TRUE);
+    g_string_free(m->alert_fgcolor, TRUE);
     free(m);
 
   } else {

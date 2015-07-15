@@ -10,6 +10,8 @@
 struct thinkpad_battery_monitor {
   GString* bar_text;
   GMutex* mutex;
+  GString* alert_fgcolor;
+  GString* alert_bgcolor;
 
   GString* str;
 };
