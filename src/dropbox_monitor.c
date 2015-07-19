@@ -33,7 +33,7 @@ void* dropbox_init(GString* bar_text, GMutex* mutex, GKeyFile* configs) {
   m->status_req = "get_dropbox_status\ndone\n";
   m->icon = "";
 
-  m->err = malloc(strlen(m->icon) + 1);
+  m->err = malloc((strlen(m->icon) + 2)*sizeof(char));
   sprintf(m->err, "%s!", m->icon);
 
   m->socket = -1;

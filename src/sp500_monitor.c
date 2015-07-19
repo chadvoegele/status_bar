@@ -36,7 +36,7 @@ void* sp500_init(GString* bar_text, GMutex* mutex, GKeyFile* configs) {
   m->curl = curl_easy_init();
   m->icon = "";
 
-  m->err = malloc(strlen(m->icon) + 1);
+  m->err = malloc((strlen(m->icon) + 2)*sizeof(char));
   sprintf(m->err, "%s!", m->icon);
 
   return m;

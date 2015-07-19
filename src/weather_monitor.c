@@ -43,7 +43,7 @@ void* weather_init(GString* bar_text, GMutex* mutex, GKeyFile* configs) {
   m->curl = curl_easy_init();
   m->icon = "";
 
-  m->err = malloc(strlen(m->icon) + 1);
+  m->err = malloc((strlen(m->icon) + 2)*sizeof(char));
   sprintf(m->err, "%s!", m->icon);
 
   return m;
@@ -112,13 +112,13 @@ int format_output(GString* res, char* icon) {
   char** word = words;
   while (*word != 0) {
     if (strstr(*word, "</weather>") != NULL) {
-      weather_str = malloc(strlen(*word)*sizeof(char));
+      weather_str = malloc((1+strlen(*word))*sizeof(char));
       strcpy(weather_str, *word);
       g_strstrip(weather_str);
       weather_code = parse_xml_str(weather_str, "<weather>", "</weather>");
     }
     if (strstr(*word, "<temp_f>") != NULL) {
-      temp_str = malloc(strlen(*word)*sizeof(char));
+      temp_str = malloc((1+strlen(*word))*sizeof(char));
       strcpy(temp_str, *word);
       g_strstrip(temp_str);
       temp_code = parse_xml_str(temp_str, "<temp_f>", "</temp_f>");
