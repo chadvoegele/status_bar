@@ -191,6 +191,8 @@ void format_status(char* word) {
     strcpy(word, "Downloading");
   } else if (strstr(word, "Indexing")) {
     strcpy(word, "Indexing");
+  } else if (strstr(word, "Starting")) {
+    strcpy(word, "Starting");
   } else if (strstr(word, "Connecting")) {
     strcpy(word, "Connecting");
   } else {
