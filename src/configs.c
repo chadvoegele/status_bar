@@ -19,6 +19,9 @@
 #include "dropbox_monitor.h"
 #include "sp500_monitor.h"
 #include "weather_monitor.h"
+#include "core_temp_monitor.h"
+#include "it87_temp_monitor.h"
+#include "it87_fan_monitor.h"
 
 void load_configs(GKeyFile* configs) {
   GString* config_path = g_string_new(NULL);
@@ -124,6 +127,12 @@ struct monitor_fns convert_string_to_monitor_fns(char* str) {
     return thinkpad_temp_monitor_fns();
   } else if (strcmp("weather", str) == 0) {
     return weather_monitor_fns();
+  } else if (strcmp("core_temp", str) == 0) {
+    return core_temp_monitor_fns();
+  } else if (strcmp("it87_temp", str) == 0) {
+    return it87_temp_monitor_fns();
+  } else if (strcmp("it87_fan", str) == 0) {
+    return it87_fan_monitor_fns();
   } else {
     fprintf(stderr, "Monitor %s not found.\n", str);
     exit(EXIT_FAILURE);
