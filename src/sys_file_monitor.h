@@ -17,7 +17,6 @@ struct sys_file_monitor {
   GString* str;
 };
 
-void* sys_file_init(GString*, GMutex*, GKeyFile*);
 gboolean sys_file_update_text(void*);
 int sys_file_sleep_time(void*);
 void sys_file_free(void*);
