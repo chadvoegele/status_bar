@@ -44,19 +44,19 @@ gboolean memory_update_text(void* ptr) {
       fprintf(stderr, "Can't open mem file %s!\n", mem_file_path);
     }
 
-    int active = 0;
+    int available = 0;
     int total = -1;
     char buf[MAX_MEMINFO_LENGTH];
     if (mem_file != NULL) {
       while (fgets(buf, MAX_MEMINFO_LENGTH, mem_file) != NULL) {
-        if (strncmp(buf, "Active:", 7) == 0) {
-          sscanf(buf, "%*s%d", &active);
-        } else if (strncmp(buf, "MemTotal:", 9) == 0) {
+        if (strncmp(buf, "MemTotal:", 9) == 0) {
           sscanf(buf, "%*s%d", &total);
+        } else if (strncmp(buf, "MemAvailable:", 13) == 0) {
+          sscanf(buf, "%*s%d", &available);
         }
       }
     }
-    int usage_pct = 100.0 * active / total;
+    int usage_pct = 100 * (1 - (1.0 * available) / (1.0 * total));
 
     if (total != -1) {
       g_string_printf(m->str, "%d%%", usage_pct);
