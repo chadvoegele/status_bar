@@ -29,7 +29,6 @@ struct status_bar {
   FILE* dzen_pipe;
   GKeyFile* configs;
   int n_monitors;
-  int one_char_width;
   struct monitor_refs* monitors;
   GMainLoop* loop;
 };

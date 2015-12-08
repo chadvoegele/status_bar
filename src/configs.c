@@ -82,14 +82,6 @@ void build_dzen_str(GKeyFile* configs, GString* str) {
   g_free(font_size);
 }
 
-int get_one_char_width(GKeyFile* configs) {
-  GError* error = NULL;
-  int one_char_width = g_key_file_get_integer(configs, "configs", "one_char_width", &error);
-  fail_on_error(error);
-
-  return one_char_width;
-}
-
 void init_monitors(GKeyFile* configs, GArray** fns) {
   char** monitor_configs;
   gsize lengths;

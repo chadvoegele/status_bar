@@ -36,8 +36,6 @@ void init_status_bar(struct status_bar* status_bar) {
   status_bar->dzen_pipe = popen(dzen_str->str, "w");
   g_string_free(dzen_str, TRUE);
 
-  status_bar->one_char_width = get_one_char_width(status_bar->configs);
-
   status_bar->loop = g_main_loop_new(g_main_context_default(), FALSE);
 
   g_unix_signal_add(SIGINT, quit_loop, status_bar->loop);
