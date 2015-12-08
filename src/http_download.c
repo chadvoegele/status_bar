@@ -14,6 +14,7 @@ size_t writefunc(void *res_str, size_t size, size_t nmemb, GString* res) {
 CURLcode download_data(CURL* curl, char* request_str, GString* res) {
   res = g_string_set_size(res, 0);
   // Modified example from Alexandre Jasim on Stack Overflow.
+  curl_easy_setopt(curl, CURLOPT_USERAGENT, "c");
   curl_easy_setopt(curl, CURLOPT_URL, request_str);
   curl_easy_setopt(curl, CURLOPT_TIMEOUT, 30L);
   curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, writefunc);
