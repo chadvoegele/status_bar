@@ -4,7 +4,7 @@
 PROG_NAME=status_bar
 
 CXX=gcc
-CXX_FLAGS=-Wall
+CXX_FLAGS=-Wall -O3
 
 SRCDIR=src
 BINDIR=bin
@@ -20,7 +20,7 @@ ${BINDIR}/${PROG_NAME}: ${OBJS}
 
 $(OBJS): $(BINDIR)/%.o : $(SRCDIR)/%.c
 	@mkdir -p ${BINDIR}
-	@${CXX} ${CXX_FLAGS} ${INCLUDES} -O3 -c $< -o $@
+	@${CXX} ${CXX_FLAGS} ${INCLUDES} -c $< -o $@
 
 clean:
 	rm bin/*
