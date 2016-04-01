@@ -28,6 +28,9 @@ int convert_core_temp(int temp) {
 void* core_temp_init(GString* bar_text, GMutex* mutex,
     GKeyFile* configs) {
   GArray* temp_filenames = g_array_new(FALSE, FALSE, sizeof(GString*));
+  //TODO: Search directory for *input files instead of hardcode
+  append_filename(temp_filenames,
+      "/sys/devices/platform/coretemp.0/hwmon/hwmon0/temp1_input");
   append_filename(temp_filenames,
       "/sys/devices/platform/coretemp.0/hwmon/hwmon0/temp2_input");
   append_filename(temp_filenames,
@@ -36,6 +39,10 @@ void* core_temp_init(GString* bar_text, GMutex* mutex,
       "/sys/devices/platform/coretemp.0/hwmon/hwmon0/temp4_input");
   append_filename(temp_filenames,
       "/sys/devices/platform/coretemp.0/hwmon/hwmon0/temp5_input");
+  append_filename(temp_filenames,
+      "/sys/devices/platform/coretemp.0/hwmon/hwmon0/temp6_input");
+  append_filename(temp_filenames,
+      "/sys/devices/platform/coretemp.0/hwmon/hwmon0/temp7_input");
 
   gunichar icon;
   sscanf("U+62529", "U+%06"G_GINT32_FORMAT"X", &icon);

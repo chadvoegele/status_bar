@@ -22,6 +22,8 @@
 #include "core_temp_monitor.h"
 #include "it87_temp_monitor.h"
 #include "it87_fan_monitor.h"
+#include "nct6775_temp_monitor.h"
+#include "nct6775_fan_monitor.h"
 
 void load_configs(GKeyFile* configs) {
   GString* config_path = g_string_new(NULL);
@@ -125,6 +127,10 @@ struct monitor_fns convert_string_to_monitor_fns(char* str) {
     return it87_temp_monitor_fns();
   } else if (strcmp("it87_fan", str) == 0) {
     return it87_fan_monitor_fns();
+  } else if (strcmp("nct6775_temp", str) == 0) {
+    return nct6775_temp_monitor_fns();
+  } else if (strcmp("nct6775_fan", str) == 0) {
+    return nct6775_fan_monitor_fns();
   } else {
     fprintf(stderr, "Monitor %s not found.\n", str);
     exit(EXIT_FAILURE);
