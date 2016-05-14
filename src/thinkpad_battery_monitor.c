@@ -115,6 +115,7 @@ void thinkpad_battery_free(void* ptr) {
   if ((m = (struct thinkpad_battery_monitor*)ptr) != NULL) {
     g_string_free(m->str, TRUE);
     g_string_free(m->alert_fgcolor, TRUE);
+    g_string_free(m->alert_bgcolor, TRUE);
     free(m);
 
   } else {

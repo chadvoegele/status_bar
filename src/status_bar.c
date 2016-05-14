@@ -107,6 +107,7 @@ gboolean update_status_bar(void* ptr) {
 
     fprintf(status_bar->dzen_pipe, "%s\n", output->str);
     fflush(status_bar->dzen_pipe);
+    g_string_free(output, TRUE);
 
   } else {
     fprintf(stderr, "Did not receive status_bar in update status bar.\n");
