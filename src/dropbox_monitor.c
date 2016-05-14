@@ -62,11 +62,13 @@ gboolean dropbox_update_text(void* ptr) {
       }
       if (m->conn == -1) {
         fprintf(stderr, "Failed to connect to dropbox socket.\n");
+        close(m->socket);
         m->socket = -1;
       } else {
         int bytes_sent = send(m->socket, m->status_req, strlen(m->status_req), MSG_NOSIGNAL);
         if (bytes_sent == -1) {
           fprintf(stderr, "Failed to send request to dropbox socket.\n");
+          close(m->socket);
           m->socket = -1;
           m->conn = -1;
         } else {
