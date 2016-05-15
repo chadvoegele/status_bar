@@ -68,7 +68,9 @@ gboolean thinkpad_temp_update_text(void* ptr) {
     } else {
       g_string_printf(m->str, "!");
     }
-    fclose(temp_file);
+
+    if (temp_file != NULL)
+      fclose(temp_file);
 
     g_mutex_lock(m->mutex);
     m->bar_text = g_string_assign(m->bar_text, m->str->str);

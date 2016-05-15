@@ -50,7 +50,9 @@ gboolean sys_file_update_text(void* ptr) {
         fscanf(temp_file, "%d", &temp);
         g_string_append_printf(m->str, " %d", m->convert(temp));
       }
-      fclose(temp_file);
+
+      if (temp_file != NULL)
+        fclose(temp_file);
     }
 
     if (n_read == n_temps) {

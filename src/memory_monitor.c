@@ -64,7 +64,8 @@ gboolean memory_update_text(void* ptr) {
       g_string_printf(m->str, "!");
     }
 
-    fclose(mem_file);
+    if (mem_file != NULL)
+      fclose(mem_file);
 
     g_mutex_lock(m->mutex);
     m->bar_text = g_string_assign(m->bar_text, m->str->str);

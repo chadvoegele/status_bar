@@ -56,7 +56,9 @@ gboolean thinkpad_fan_update_text(void* ptr) {
       g_string_printf(m->str, "!");
     }
 
-    fclose(fan_file);
+    if (fan_file != NULL)
+      fclose(fan_file);
+
     g_mutex_lock(m->mutex);
     m->bar_text = g_string_assign(m->bar_text, m->str->str);
     g_mutex_unlock(m->mutex);

@@ -85,8 +85,11 @@ gboolean thinkpad_battery_update_text(void* ptr) {
       g_string_printf(m->str, "!");
     }
 
-    fclose(battery_now_file);
-    fclose(battery_full_file);
+    if (battery_now_file != NULL)
+      fclose(battery_now_file);
+
+    if (battery_full_file != NULL)
+      fclose(battery_full_file);
 
     g_mutex_lock(m->mutex);
     m->bar_text = g_string_assign(m->bar_text, m->str->str);

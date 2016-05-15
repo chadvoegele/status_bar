@@ -143,12 +143,13 @@ int total_bytes(GArray* arr) {
     total_bytes = total_bytes + bytes;
 
     int close_ret = 1;
-    if (fps != NULL)
+    if (fps != NULL) {
       close_ret = fclose(fps);
 
-    if (close_ret != 0) {
-      fprintf(stderr, "Could not close %s\n", file);
-      exit(EXIT_FAILURE);
+      if (close_ret != 0) {
+        fprintf(stderr, "Could not close %s\n", file);
+        exit(EXIT_FAILURE);
+      }
     }
   }
   return total_bytes;
