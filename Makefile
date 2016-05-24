@@ -10,7 +10,7 @@ SRCDIR=src
 BINDIR=bin
 
 INCLUDES=-I${SRCDIR} `pkg-config --cflags glib-2.0 libcurl`
-LIBS=`pkg-config --libs glib-2.0 libcurl`
+LIBS=`pkg-config --libs glib-2.0 libcurl alsa`
 
 SRC=$(wildcard ${SRCDIR}/*.c)
 OBJS=$(patsubst ${SRCDIR}/%.c,${BINDIR}/%.o,$(SRC))
