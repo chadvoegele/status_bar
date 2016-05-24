@@ -97,12 +97,12 @@ gboolean volume_update_text(void* ptr) {
     int vol_mute_code = get_vol_mute(&vol, &mute);
 
     if (vol_mute_code != 0) {
-      g_string_printf(m->str, "!");
+      g_string_printf(m->str, "!");
     } else {
       if (mute == 0 || vol < -999999)  // muted
-        g_string_printf(m->str, "M");
+        g_string_printf(m->str, "");
       else
-        g_string_printf(m->str, "%ld", vol/100);
+        g_string_printf(m->str, "%ld", vol/100);
     }
 
     g_mutex_lock(m->mutex);
