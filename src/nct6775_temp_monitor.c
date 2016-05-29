@@ -31,13 +31,7 @@ void* nct6775_temp_init(GString* bar_text, GMutex* mutex,
   append_filename(temp_filenames,
       "/sys/devices/platform/nct6775.2576/hwmon/hwmon1/temp1_input");
   append_filename(temp_filenames,
-      "/sys/devices/platform/nct6775.2576/hwmon/hwmon1/temp2_input");
-  append_filename(temp_filenames,
       "/sys/devices/platform/nct6775.2576/hwmon/hwmon1/temp3_input");
-  append_filename(temp_filenames,
-      "/sys/devices/platform/nct6775.2576/hwmon/hwmon1/temp4_input");
-  append_filename(temp_filenames,
-      "/sys/devices/platform/nct6775.2576/hwmon/hwmon1/temp5_input");
   append_filename(temp_filenames,
       "/sys/devices/platform/nct6775.2576/hwmon/hwmon1/temp7_input");
 
