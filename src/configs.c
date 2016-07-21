@@ -25,6 +25,7 @@
 #include "nct6775_temp_monitor.h"
 #include "nct6775_fan_monitor.h"
 #include "volume_monitor.h"
+#include "nginx_monitor.h"
 
 void load_configs(GKeyFile* configs) {
   GString* config_path = g_string_new(NULL);
@@ -134,6 +135,8 @@ struct monitor_fns convert_string_to_monitor_fns(char* str) {
     return nct6775_fan_monitor_fns();
   } else if (strcmp("volume", str) == 0) {
     return volume_monitor_fns();
+  } else if (strcmp("nginx", str) == 0) {
+    return nginx_monitor_fns();
   } else {
     fprintf(stderr, "Monitor %s not found.\n", str);
     exit(EXIT_FAILURE);
