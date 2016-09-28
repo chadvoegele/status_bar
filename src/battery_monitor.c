@@ -10,20 +10,20 @@
 
 #include "status_bar.h"
 #include "configs.h"
-#include "thinkpad_battery_monitor.h"
+#include "battery_monitor.h"
 
-struct monitor_fns thinkpad_battery_monitor_fns() {
+struct monitor_fns battery_monitor_fns() {
   struct monitor_fns f;
-  f.init = thinkpad_battery_init;
-  f.sleep_time = thinkpad_battery_sleep_time;
-  f.update_text = thinkpad_battery_update_text;
-  f.free = thinkpad_battery_free;
+  f.init = battery_init;
+  f.sleep_time = battery_sleep_time;
+  f.update_text = battery_update_text;
+  f.free = battery_free;
 
   return f;
 }
 
-void* thinkpad_battery_init(GString* bar_text, GMutex* mutex, GKeyFile* configs) {
-  struct thinkpad_battery_monitor* m = malloc(sizeof(struct thinkpad_battery_monitor));
+void* battery_init(GString* bar_text, GMutex* mutex, GKeyFile* configs) {
+  struct battery_monitor* m = malloc(sizeof(struct battery_monitor));
 
   m->bar_text = bar_text;
   m->mutex = mutex;
@@ -44,25 +44,43 @@ void* thinkpad_battery_init(GString* bar_text, GMutex* mutex, GKeyFile* configs)
 
   m->str = g_string_new(NULL);
 
+  error = NULL;
+  char* battery_full_path = g_key_file_get_string(
+      configs, "configs", "battery_full_path", &error);
+  fail_on_error(error);
+
+  m->battery_full_path_str = g_string_new(NULL);
+  g_string_printf(m->battery_full_path_str, "%s", battery_full_path);
+  g_free(battery_full_path);
+
+  error = NULL;
+  char* battery_now_path = g_key_file_get_string(
+      configs, "configs", "battery_now_path", &error);
+  fail_on_error(error);
+
+  m->battery_now_path_str = g_string_new(NULL);
+  g_string_printf(m->battery_now_path_str, "%s", battery_now_path);
+  g_free(battery_now_path);
+
   return m;
 }
 
-gboolean thinkpad_battery_update_text(void* ptr) {
-  struct thinkpad_battery_monitor* m;
-  if ((m = (struct thinkpad_battery_monitor*)ptr) != NULL) {
+gboolean battery_update_text(void* ptr) {
+  struct battery_monitor* m;
+  if ((m = (struct battery_monitor*)ptr) != NULL) {
     int full, now;
     int n_full = 0;
     int n_now = 0;
 
     FILE* battery_full_file;
-    char* battery_full_file_path = "/sys/class/power_supply/BAT0/energy_full";
+    char* battery_full_file_path = m->battery_full_path_str->str;
     battery_full_file = fopen(battery_full_file_path, "r");
     if (battery_full_file == NULL) {
       fprintf(stderr, "Can't open battery file %s\n", battery_full_file_path);
     }
 
     FILE* battery_now_file;
-    char* battery_now_file_path = "/sys/class/power_supply/BAT0/energy_now";
+    char* battery_now_file_path = m->battery_now_path_str->str;
     battery_now_file = fopen(battery_now_file_path, "r");
     if (battery_now_file == NULL) {
       fprintf(stderr, "Can't open battery file %s!\n", battery_now_file_path);
@@ -98,31 +116,31 @@ gboolean thinkpad_battery_update_text(void* ptr) {
     return TRUE;
 
   } else {
-    fprintf(stderr, "thinkpad_battery monitor not received in update.\n");
+    fprintf(stderr, "battery monitor not received in update.\n");
     exit(EXIT_FAILURE);
   }
 }
 
-int thinkpad_battery_sleep_time(void* ptr) {
-  struct thinkpad_battery_monitor* m;
-  if ((m = (struct thinkpad_battery_monitor*)ptr) != NULL) {
+int battery_sleep_time(void* ptr) {
+  struct battery_monitor* m;
+  if ((m = (struct battery_monitor*)ptr) != NULL) {
     return 300;
   } else {
-    fprintf(stderr, "thinkpad_battery monitor not received in sleep_time.\n");
+    fprintf(stderr, "battery monitor not received in sleep_time.\n");
     exit(EXIT_FAILURE);
   }
 }
 
-void thinkpad_battery_free(void* ptr) {
-  struct thinkpad_battery_monitor* m;
-  if ((m = (struct thinkpad_battery_monitor*)ptr) != NULL) {
+void battery_free(void* ptr) {
+  struct battery_monitor* m;
+  if ((m = (struct battery_monitor*)ptr) != NULL) {
     g_string_free(m->str, TRUE);
     g_string_free(m->alert_fgcolor, TRUE);
     g_string_free(m->alert_bgcolor, TRUE);
     free(m);
 
   } else {
-    fprintf(stderr, "thinkpad_battery monitor not received in close.\n");
+    fprintf(stderr, "battery monitor not received in close.\n");
     exit(EXIT_FAILURE);
   }
 }

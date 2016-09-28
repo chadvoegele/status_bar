@@ -13,7 +13,7 @@
 #include "clock_monitor.h"
 #include "thinkpad_temp_monitor.h"
 #include "thinkpad_fan_monitor.h"
-#include "thinkpad_battery_monitor.h"
+#include "battery_monitor.h"
 #include "memory_monitor.h"
 #include "net_monitor.h"
 #include "dropbox_monitor.h"
@@ -115,8 +115,8 @@ struct monitor_fns convert_string_to_monitor_fns(char* str) {
     return memory_monitor_fns();
   } else if (strcmp("sp500", str) == 0) {
     return sp500_monitor_fns();
-  } else if (strcmp("thinkpad_battery", str) == 0) {
-    return thinkpad_battery_monitor_fns();
+  } else if (strcmp("battery", str) == 0) {
+    return battery_monitor_fns();
   } else if (strcmp("thinkpad_fan", str) == 0) {
     return thinkpad_fan_monitor_fns();
   } else if (strcmp("thinkpad_temp", str) == 0) {
