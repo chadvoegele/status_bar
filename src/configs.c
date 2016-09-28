@@ -71,19 +71,31 @@ void build_dzen_str(GKeyFile* configs, GString* str) {
   fail_on_error(error);
 
   error = NULL;
+  char* height = g_key_file_get_string(configs, "configs", "height", &error);
+  fail_on_error(error);
+
+  error = NULL;
   char* font_size = g_key_file_get_string(configs, "configs", "font_size", &error);
   fail_on_error(error);
 
-  g_string_printf(str, "lemonbar -F \\%s -B \\%s -g \"%sx19+0+0\" -f \"-*-terminus-medium-*-*-*-%s-*-*-*-*-*-*-*\" -f \"-*-ionicons-medium-*-*-*-17-*-*-*-*-*-*-*\"",
+  error = NULL;
+  char* icon_font_size = g_key_file_get_string(configs, "configs", "icon_font_size", &error);
+  fail_on_error(error);
+
+  g_string_printf(str, "lemonbar -F \\%s -B \\%s -g \"%sx%s+0+0\" -f \"-*-terminus-medium-*-*-*-%s-*-*-*-*-*-*-*\" -f \"-*-ionicons-medium-*-*-*-%s-*-*-*-*-*-*-*\"",
       fg_color,
       bg_color,
       width,
-      font_size);
+      height,
+      font_size,
+      icon_font_size);
 
   g_free(fg_color);
   g_free(bg_color);
   g_free(width);
+  g_free(height);
   g_free(font_size);
+  g_free(icon_font_size);
 }
 
 void init_monitors(GKeyFile* configs, GArray** fns) {
