@@ -200,6 +200,8 @@ void format_status(char* word) {
     strcpy(word, "Starting");
   } else if (strstr(word, "Connecting")) {
     strcpy(word, "Connecting");
+  } else if (strstr(word, "Syncing")) {
+    strcpy(word, "Syncing");
   } else {
     fprintf(stderr, "Unable to parse: %s\n", word);
     strcpy(word, "?");
