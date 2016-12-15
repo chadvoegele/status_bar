@@ -33,70 +33,68 @@ void append_filename(GArray* filenames, char* filename) {
 
 gboolean sys_file_update_text(void* ptr) {
   struct sys_file_monitor* m;
-  if ((m = (struct sys_file_monitor*)ptr) != NULL) {
-    int n_temps = m->temp_filenames->len;
-
-    g_string_truncate(m->str, 0);
-    int n_read = 0;
-    for (; n_read < n_temps; n_read++) {
-      char* temp_file_path = g_array_index(m->temp_filenames, GString*, n_read)->str;
-      FILE* temp_file;
-      int temp;
-      temp_file = fopen(temp_file_path, "r");
-      if (temp_file == NULL) {
-        fprintf(stderr, "Can't open temp file %s!\n", temp_file_path);
-        n_read--;
-      } else {
-        fscanf(temp_file, "%d", &temp);
-        g_string_append_printf(m->str, " %d", m->convert(temp));
-      }
-
-      if (temp_file != NULL)
-        fclose(temp_file);
-    }
-
-    if (n_read == n_temps) {
-      g_string_prepend_unichar(m->str, m->icon);
-
-    } else {
-      g_string_printf(m->str, "U+%04"G_GINT32_FORMAT"X!", m->icon);
-    }
-
-    g_mutex_lock(m->mutex);
-    m->bar_text = g_string_assign(m->bar_text, m->str->str);
-    g_mutex_unlock(m->mutex);
-
-    return TRUE;
-
-  } else {
+  if ((m = (struct sys_file_monitor*)ptr) == NULL) {
     fprintf(stderr, "sys_file monitor not received in update.\n");
     exit(EXIT_FAILURE);
   }
+
+  int n_temps = m->temp_filenames->len;
+
+  g_string_truncate(m->str, 0);
+  int n_read = 0;
+  for (; n_read < n_temps; n_read++) {
+    char* temp_file_path = g_array_index(m->temp_filenames, GString*, n_read)->str;
+    FILE* temp_file;
+    int temp;
+    temp_file = fopen(temp_file_path, "r");
+    if (temp_file == NULL) {
+      fprintf(stderr, "Can't open temp file %s!\n", temp_file_path);
+      n_read--;
+    } else {
+      fscanf(temp_file, "%d", &temp);
+      g_string_append_printf(m->str, " %d", m->convert(temp));
+    }
+
+    if (temp_file != NULL)
+      fclose(temp_file);
+  }
+
+  if (n_read == n_temps) {
+    g_string_prepend_unichar(m->str, m->icon);
+
+  } else {
+    g_string_printf(m->str, "U+%04"G_GINT32_FORMAT"X!", m->icon);
+  }
+
+  g_mutex_lock(m->mutex);
+  m->bar_text = g_string_assign(m->bar_text, m->str->str);
+  g_mutex_unlock(m->mutex);
+
+  return TRUE;
 }
 
 int sys_file_sleep_time(void* ptr) {
   struct sys_file_monitor* m;
-  if ((m = (struct sys_file_monitor*)ptr) != NULL) {
-    return 5;
-  } else {
+  if ((m = (struct sys_file_monitor*)ptr) == NULL) {
     fprintf(stderr, "sys_file monitor not received in sleep_time.\n");
     exit(EXIT_FAILURE);
   }
+
+  return 5;
 }
 
 void sys_file_free(void* ptr) {
   struct sys_file_monitor* m;
-  if ((m = (struct sys_file_monitor*)ptr) != NULL) {
-    for (int i = 0; i < m->temp_filenames->len; i++) {
-      g_string_free(g_array_index(m->temp_filenames, GString*, i), TRUE);
-    }
-    g_array_free(m->temp_filenames, TRUE);
-
-    g_string_free(m->str, TRUE);
-    free(m);
-
-  } else {
+  if ((m = (struct sys_file_monitor*)ptr) == NULL) {
     fprintf(stderr, "sys_file monitor not received in close.\n");
     exit(EXIT_FAILURE);
   }
+
+  for (int i = 0; i < m->temp_filenames->len; i++) {
+    g_string_free(g_array_index(m->temp_filenames, GString*, i), TRUE);
+  }
+  g_array_free(m->temp_filenames, TRUE);
+
+  g_string_free(m->str, TRUE);
+  free(m);
 }

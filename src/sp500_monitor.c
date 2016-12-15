@@ -44,51 +44,49 @@ void* sp500_init(GString* bar_text, GMutex* mutex, GKeyFile* configs) {
 
 gboolean sp500_update_text(void* ptr) {
   struct sp500_monitor* m;
-  if ((m = (struct sp500_monitor*)ptr) != NULL) {
-    CURLcode code = download_data(m->curl, m->request_str->str, m->res);
-    char* output;
-
-    if (code == CURLE_OK && format_price(m->res, m->icon) != -1) {
-      output = m->res->str;
-    } else {
-      output = m->err;
-    }
-
-    g_mutex_lock(m->mutex);
-    m->bar_text = g_string_assign(m->bar_text, output);
-    g_mutex_unlock(m->mutex);
-
-    return TRUE;
-
-  } else {
+  if ((m = (struct sp500_monitor*)ptr) == NULL) {
     fprintf(stderr, "sp500 monitor not received in update_text.\n");
     exit(EXIT_FAILURE);
   }
+
+  CURLcode code = download_data(m->curl, m->request_str->str, m->res);
+  char* output;
+
+  if (code == CURLE_OK && format_price(m->res, m->icon) != -1) {
+    output = m->res->str;
+  } else {
+    output = m->err;
+  }
+
+  g_mutex_lock(m->mutex);
+  m->bar_text = g_string_assign(m->bar_text, output);
+  g_mutex_unlock(m->mutex);
+
+  return TRUE;
 }
 
 int sp500_sleep_time(void* ptr) {
   struct sp500_monitor* m;
-  if ((m = (struct sp500_monitor*)ptr) != NULL) {
-    return 60;
-  } else {
+  if ((m = (struct sp500_monitor*)ptr) == NULL) {
     fprintf(stderr, "sp500 monitor not received in sleep_time.\n");
     exit(EXIT_FAILURE);
   }
+
+  return 60;
 }
 
 void sp500_free(void* ptr) {
   struct sp500_monitor* m;
-  if ((m = (struct sp500_monitor*)ptr) != NULL) {
-    free(m->err);
-    g_string_free(m->res, TRUE);
-    g_string_free(m->request_str, TRUE);
-    curl_easy_cleanup(m->curl);
-    free(m);
-
-  } else {
+  if ((m = (struct sp500_monitor*)ptr) == NULL) {
     fprintf(stderr, "sp500 monitor not received in close.\n");
     exit(EXIT_FAILURE);
   }
+
+  free(m->err);
+  g_string_free(m->res, TRUE);
+  g_string_free(m->request_str, TRUE);
+  curl_easy_cleanup(m->curl);
+  free(m);
 }
 
 int format_price(GString* res, char* icon) {

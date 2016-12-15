@@ -36,51 +36,49 @@ void* clock_init(GString* bar_text, GMutex* mutex, GKeyFile* configs) {
 
 gboolean clock_update_text(void* ptr) {
   struct clock_monitor* m;
-  if ((m = (struct clock_monitor*)ptr) != NULL) {
-    time_t rawtime;
-    struct tm timeinfo;
-    time(&rawtime);
-    localtime_r(&rawtime, &timeinfo);
-
-    char* format_str;
-    if (m->colon_on) {
-      format_str = "%B%e,%l:%M";
-    } else {
-      format_str = "%B%e,%l %M";
-    }
-    m->colon_on = !m->colon_on;
-    strftime(m->str, MAX_TEXT_LENGTH, format_str, &timeinfo);
-
-    g_mutex_lock(m->mutex);
-    m->bar_text = g_string_assign(m->bar_text, m->str);
-    g_mutex_unlock(m->mutex);
-
-    return TRUE;
-
-  } else {
+  if ((m = (struct clock_monitor*)ptr) == NULL) {
     fprintf(stderr, "clock monitor not received in update.\n");
     exit(EXIT_FAILURE);
   }
+
+  time_t rawtime;
+  struct tm timeinfo;
+  time(&rawtime);
+  localtime_r(&rawtime, &timeinfo);
+
+  char* format_str;
+  if (m->colon_on) {
+    format_str = "%B%e,%l:%M";
+  } else {
+    format_str = "%B%e,%l %M";
+  }
+  m->colon_on = !m->colon_on;
+  strftime(m->str, MAX_TEXT_LENGTH, format_str, &timeinfo);
+
+  g_mutex_lock(m->mutex);
+  m->bar_text = g_string_assign(m->bar_text, m->str);
+  g_mutex_unlock(m->mutex);
+
+  return TRUE;
 }
 
 int clock_sleep_time(void* ptr) {
   struct clock_monitor* m;
-  if ((m = (struct clock_monitor*)ptr) != NULL) {
-    return 5;
-  } else {
+  if ((m = (struct clock_monitor*)ptr) == NULL) {
     fprintf(stderr, "clock monitor not received in sleep_time.\n");
     exit(EXIT_FAILURE);
   }
+
+  return 5;
 }
 
 void clock_free(void* ptr) {
   struct clock_monitor* m;
-  if ((m = (struct clock_monitor*)ptr) != NULL) {
-    free(m->str);
-    free(m);
-
-  } else {
+  if ((m = (struct clock_monitor*)ptr) == NULL) {
     fprintf(stderr, "clock monitor not received in close.\n");
     exit(EXIT_FAILURE);
   }
+
+  free(m->str);
+  free(m);
 }

@@ -34,61 +34,59 @@ void* thinkpad_fan_init(GString* bar_text, GMutex* mutex, GKeyFile* configs) {
 
 gboolean thinkpad_fan_update_text(void* ptr) {
   struct thinkpad_fan_monitor* m;
-  if ((m = (struct thinkpad_fan_monitor*)ptr) != NULL) {
-    int n_read = 0;
-
-    FILE* fan_file;
-    char* fan_file_path = "/proc/acpi/ibm/fan";
-
-    fan_file = fopen(fan_file_path, "r");
-    if (fan_file == NULL) {
-      fprintf(stderr, "Can't open fan file %s!\n", fan_file_path);
-    }
-
-    int speed;
-    if (fan_file != NULL)
-      n_read = fscanf(fan_file, "%*s %*s %*s %d", &speed);
-
-    if (n_read == 1) {
-      g_string_printf(m->str, "%d", speed);
-    }
-    else {
-      g_string_printf(m->str, "!");
-    }
-
-    if (fan_file != NULL)
-      fclose(fan_file);
-
-    g_mutex_lock(m->mutex);
-    m->bar_text = g_string_assign(m->bar_text, m->str->str);
-    g_mutex_unlock(m->mutex);
-
-    return TRUE;
-
-  } else {
+  if ((m = (struct thinkpad_fan_monitor*)ptr) == NULL) {
     fprintf(stderr, "thinkpad_fan monitor not received in update.\n");
     exit(EXIT_FAILURE);
   }
+
+  int n_read = 0;
+
+  FILE* fan_file;
+  char* fan_file_path = "/proc/acpi/ibm/fan";
+
+  fan_file = fopen(fan_file_path, "r");
+  if (fan_file == NULL) {
+    fprintf(stderr, "Can't open fan file %s!\n", fan_file_path);
+  }
+
+  int speed;
+  if (fan_file != NULL)
+    n_read = fscanf(fan_file, "%*s %*s %*s %d", &speed);
+
+  if (n_read == 1) {
+    g_string_printf(m->str, "%d", speed);
+  }
+  else {
+    g_string_printf(m->str, "!");
+  }
+
+  if (fan_file != NULL)
+    fclose(fan_file);
+
+  g_mutex_lock(m->mutex);
+  m->bar_text = g_string_assign(m->bar_text, m->str->str);
+  g_mutex_unlock(m->mutex);
+
+  return TRUE;
 }
 
 int thinkpad_fan_sleep_time(void* ptr) {
   struct thinkpad_fan_monitor* m;
-  if ((m = (struct thinkpad_fan_monitor*)ptr) != NULL) {
-    return 5;
-  } else {
+  if ((m = (struct thinkpad_fan_monitor*)ptr) == NULL) {
     fprintf(stderr, "thinkpad_fan monitor not received in sleep_time.\n");
     exit(EXIT_FAILURE);
   }
+
+  return 5;
 }
 
 void thinkpad_fan_free(void* ptr) {
   struct thinkpad_fan_monitor* m;
-  if ((m = (struct thinkpad_fan_monitor*)ptr) != NULL) {
-    g_string_free(m->str, TRUE);
-    free(m);
-
-  } else {
+  if ((m = (struct thinkpad_fan_monitor*)ptr) == NULL) {
     fprintf(stderr, "thinkpad_fan monitor not received in close.\n");
     exit(EXIT_FAILURE);
   }
+
+  g_string_free(m->str, TRUE);
+  free(m);
 }

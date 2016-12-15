@@ -51,53 +51,51 @@ void* weather_init(GString* bar_text, GMutex* mutex, GKeyFile* configs) {
 
 gboolean weather_update_text(void* ptr) {
   struct weather_monitor* m;
-  if ((m = (struct weather_monitor*)ptr) != NULL) {
-    char* output;
-
-    CURLcode code = download_data(m->curl, m->request_str->str, m->res);
-
-    if (code == CURLE_OK && format_output(m->res, m->icon) != -1) {
-      output = m->res->str;
-    } else {
-      output = m->err;
-    }
-
-    g_mutex_lock(m->mutex);
-    m->bar_text = g_string_assign(m->bar_text, output);
-    g_mutex_unlock(m->mutex);
-
-    return TRUE;
-
-  } else {
+  if ((m = (struct weather_monitor*)ptr) == NULL) {
     fprintf(stderr, "Weather monitor not received in update.\n");
     exit(EXIT_FAILURE);
   }
+
+  char* output;
+
+  CURLcode code = download_data(m->curl, m->request_str->str, m->res);
+
+  if (code == CURLE_OK && format_output(m->res, m->icon) != -1) {
+    output = m->res->str;
+  } else {
+    output = m->err;
+  }
+
+  g_mutex_lock(m->mutex);
+  m->bar_text = g_string_assign(m->bar_text, output);
+  g_mutex_unlock(m->mutex);
+
+  return TRUE;
 }
 
 int weather_sleep_time(void* ptr) {
   struct weather_monitor* m;
-  if ((m = (struct weather_monitor*)ptr) != NULL) {
-    return 3600;
-  } else {
+  if ((m = (struct weather_monitor*)ptr) == NULL) {
     fprintf(stderr, "Weather monitor not received in sleep_time.\n");
     exit(EXIT_FAILURE);
   }
+
+  return 3600;
 }
 
 void weather_free(void* ptr) {
   struct weather_monitor* m;
-  if ((m = (struct weather_monitor*)ptr) != NULL) {
-    free(m->err);
-    g_string_free(m->res, TRUE);
-    g_string_free(m->request_str, TRUE);
-    curl_easy_cleanup(m->curl);
-
-    free(m);
-
-  } else {
+  if ((m = (struct weather_monitor*)ptr) == NULL) {
     fprintf(stderr, "Weather monitor not received in close.\n");
     exit(EXIT_FAILURE);
   }
+
+  free(m->err);
+  g_string_free(m->res, TRUE);
+  g_string_free(m->request_str, TRUE);
+  curl_easy_cleanup(m->curl);
+
+  free(m);
 }
 
 int format_output(GString* res, char* icon) {

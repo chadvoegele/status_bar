@@ -46,83 +46,81 @@ void* dropbox_init(GString* bar_text, GMutex* mutex, GKeyFile* configs) {
 
 gboolean dropbox_update_text(void* ptr) {
   struct dropbox_monitor* m;
-  if ((m = (struct dropbox_monitor*)ptr) != NULL) {
-    char* output;
-    output = m->err;
-
-    if (m->socket == -1) {
-      m->socket = socket(AF_UNIX, SOCK_STREAM, 0);
-    }
-
-    if (m->socket == -1) {
-      fprintf(stderr, "Failed to create dropbox socket.\n");
-    } else {
-      if (m->conn == -1) {
-        m->conn = connect(m->socket, (struct sockaddr*)&m->remote, m->addr_len);
-      }
-      if (m->conn == -1) {
-        fprintf(stderr, "Failed to connect to dropbox socket.\n");
-        close(m->socket);
-        m->socket = -1;
-      } else {
-        int bytes_sent = send(m->socket, m->status_req, strlen(m->status_req), MSG_NOSIGNAL);
-        if (bytes_sent == -1) {
-          fprintf(stderr, "Failed to send request to dropbox socket.\n");
-          close(m->socket);
-          m->socket = -1;
-          m->conn = -1;
-        } else {
-          m->response = g_string_truncate(m->response, 0);
-          int rec_status = receive(m->socket, m->response);
-
-          if (rec_status == -1) {
-            fprintf(stderr, "Bad dropbox response: %s\n", m->response->str);
-          } else {
-            format_response(m->response, m->icon);
-            output = m->response->str;
-          }
-        }
-      }
-    }
-
-    g_mutex_lock(m->mutex);
-    m->bar_text = g_string_assign(m->bar_text, output);
-    g_mutex_unlock(m->mutex);
-
-    return TRUE;
-
-  } else {
+  if ((m = (struct dropbox_monitor*)ptr) == NULL) {
     fprintf(stderr, "Dropbox monitor not received in update.\n");
     exit(EXIT_FAILURE);
   }
+
+  char* output;
+  output = m->err;
+
+  if (m->socket == -1) {
+    m->socket = socket(AF_UNIX, SOCK_STREAM, 0);
+  }
+
+  if (m->socket == -1) {
+    fprintf(stderr, "Failed to create dropbox socket.\n");
+  } else {
+    if (m->conn == -1) {
+      m->conn = connect(m->socket, (struct sockaddr*)&m->remote, m->addr_len);
+    }
+    if (m->conn == -1) {
+      fprintf(stderr, "Failed to connect to dropbox socket.\n");
+      close(m->socket);
+      m->socket = -1;
+    } else {
+      int bytes_sent = send(m->socket, m->status_req, strlen(m->status_req), MSG_NOSIGNAL);
+      if (bytes_sent == -1) {
+        fprintf(stderr, "Failed to send request to dropbox socket.\n");
+        close(m->socket);
+        m->socket = -1;
+        m->conn = -1;
+      } else {
+        m->response = g_string_truncate(m->response, 0);
+        int rec_status = receive(m->socket, m->response);
+
+        if (rec_status == -1) {
+          fprintf(stderr, "Bad dropbox response: %s\n", m->response->str);
+        } else {
+          format_response(m->response, m->icon);
+          output = m->response->str;
+        }
+      }
+    }
+  }
+
+  g_mutex_lock(m->mutex);
+  m->bar_text = g_string_assign(m->bar_text, output);
+  g_mutex_unlock(m->mutex);
+
+  return TRUE;
 }
 
 int dropbox_sleep_time(void* ptr) {
   struct dropbox_monitor* m;
-  if ((m = (struct dropbox_monitor*)ptr) != NULL) {
-    return 1;
-  } else {
+  if ((m = (struct dropbox_monitor*)ptr) == NULL) {
     fprintf(stderr, "Dropbox monitor not received in sleep_time.\n");
     exit(EXIT_FAILURE);
   }
+
+  return 1;
 }
 
 void dropbox_free(void* ptr) {
   struct dropbox_monitor* m;
-  if ((m = (struct dropbox_monitor*)ptr) != NULL) {
-    free(m->err);
-
-    if (m->socket != -1) {
-      close(m->socket);
-    }
-
-    g_string_free(m->response, TRUE);
-    free(m);
-
-  } else {
+  if ((m = (struct dropbox_monitor*)ptr) == NULL) {
     fprintf(stderr, "Dropbox monitor not received in close.\n");
     exit(EXIT_FAILURE);
   }
+
+  free(m->err);
+
+  if (m->socket != -1) {
+    close(m->socket);
+  }
+
+  g_string_free(m->response, TRUE);
+  free(m);
 }
 
 void setup_sockaddr(struct sockaddr_un* remote, int* socklen) {

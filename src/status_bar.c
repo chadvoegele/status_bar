@@ -83,36 +83,35 @@ void run_status_bar(struct status_bar* status_bar) {
 
 gboolean update_status_bar(void* ptr) {
   struct status_bar* status_bar;
-  if ((status_bar = (struct status_bar*)ptr) != NULL) {
-    struct monitor_refs* mr;
-    GString* output = g_string_new(NULL);
-    int i;
-    for (i = 0; i < status_bar->n_monitors-1; i++) {
-      mr = &status_bar->monitors[i];
-
-      if (i != 0) {
-        output = g_string_append(output, " | ");
-      }
-
-      g_mutex_lock(&mr->mutex);
-      g_string_append_printf(output, "%s", mr->text->str);
-      g_mutex_unlock(&mr->mutex);
-    }
-
-    mr = &status_bar->monitors[status_bar->n_monitors-1];
-    g_mutex_lock(&mr->mutex);
-    g_string_append_printf(output, "%%{r}%s",
-        mr->text->str);
-    g_mutex_unlock(&mr->mutex);
-
-    fprintf(status_bar->display_cmd_pipe, "%s\n", output->str);
-    fflush(status_bar->display_cmd_pipe);
-    g_string_free(output, TRUE);
-
-  } else {
+  if ((status_bar = (struct status_bar*)ptr) == NULL) {
     fprintf(stderr, "Did not receive status_bar in update status bar.\n");
     exit(EXIT_FAILURE);
   }
+
+  struct monitor_refs* mr;
+  GString* output = g_string_new(NULL);
+  int i;
+  for (i = 0; i < status_bar->n_monitors-1; i++) {
+    mr = &status_bar->monitors[i];
+
+    if (i != 0) {
+      output = g_string_append(output, " | ");
+    }
+
+    g_mutex_lock(&mr->mutex);
+    g_string_append_printf(output, "%s", mr->text->str);
+    g_mutex_unlock(&mr->mutex);
+  }
+
+  mr = &status_bar->monitors[status_bar->n_monitors-1];
+  g_mutex_lock(&mr->mutex);
+  g_string_append_printf(output, "%%{r}%s",
+      mr->text->str);
+  g_mutex_unlock(&mr->mutex);
+
+  fprintf(status_bar->display_cmd_pipe, "%s\n", output->str);
+  fflush(status_bar->display_cmd_pipe);
+  g_string_free(output, TRUE);
 
   return TRUE;
 }

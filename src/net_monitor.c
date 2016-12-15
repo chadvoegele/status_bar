@@ -42,63 +42,61 @@ void* net_init(GString* bar_text, GMutex* mutex, GKeyFile* configs) {
 
 gboolean net_update_text(void* ptr) {
   struct net_monitor* m;
-  if ((m = (struct net_monitor*)ptr) != NULL) {
-    int this_rx = total_bytes(m->rx);
-    int this_tx = total_bytes(m->tx);
-
-    int rx_speed = (this_rx - m->last_rx)*8/1000;
-    int tx_speed = (this_tx - m->last_tx)*8/1000;
-
-    m->last_rx = this_rx;
-    m->last_tx = this_tx;
-
-    g_string_printf(m->str, "%d%d", tx_speed, rx_speed);
-
-    g_mutex_lock(m->mutex);
-    m->bar_text = g_string_assign(m->bar_text, m->str->str);
-    g_mutex_unlock(m->mutex);
-
-    return TRUE;
-
-  } else {
+  if ((m = (struct net_monitor*)ptr) == NULL) {
     fprintf(stderr, "net monitor not received in update.\n");
     exit(EXIT_FAILURE);
   }
+
+  int this_rx = total_bytes(m->rx);
+  int this_tx = total_bytes(m->tx);
+
+  int rx_speed = (this_rx - m->last_rx)*8/1000;
+  int tx_speed = (this_tx - m->last_tx)*8/1000;
+
+  m->last_rx = this_rx;
+  m->last_tx = this_tx;
+
+  g_string_printf(m->str, "%d%d", tx_speed, rx_speed);
+
+  g_mutex_lock(m->mutex);
+  m->bar_text = g_string_assign(m->bar_text, m->str->str);
+  g_mutex_unlock(m->mutex);
+
+  return TRUE;
 }
 
 int net_sleep_time(void* ptr) {
   struct net_monitor* m;
-  if ((m = (struct net_monitor*)ptr) != NULL) {
-    return 1;
-  } else {
+  if ((m = (struct net_monitor*)ptr) == NULL) {
     fprintf(stderr, "net monitor not received in sleep_time.\n");
     exit(EXIT_FAILURE);
   }
+
+  return 1;
 }
 
 void net_free(void* ptr) {
   struct net_monitor* m;
-  if ((m = (struct net_monitor*)ptr) != NULL) {
-    g_string_free(m->str, TRUE);
-
-    size_t i = 0;
-    for (i = 0; i < m->rx->len; i++) {
-      g_string_free(g_array_index(m->rx, GString*, i), TRUE);
-    }
-
-    for (i = 0; i < m->rx->len; i++) {
-      g_string_free(g_array_index(m->tx, GString*, i), TRUE);
-    }
-
-    g_array_free(m->rx, TRUE);
-    g_array_free(m->tx, TRUE);
-
-    free(m);
-
-  } else {
+  if ((m = (struct net_monitor*)ptr) == NULL) {
     fprintf(stderr, "net monitor not received in close.\n");
     exit(EXIT_FAILURE);
   }
+
+  g_string_free(m->str, TRUE);
+
+  size_t i = 0;
+  for (i = 0; i < m->rx->len; i++) {
+    g_string_free(g_array_index(m->rx, GString*, i), TRUE);
+  }
+
+  for (i = 0; i < m->rx->len; i++) {
+    g_string_free(g_array_index(m->tx, GString*, i), TRUE);
+  }
+
+  g_array_free(m->rx, TRUE);
+  g_array_free(m->tx, TRUE);
+
+  free(m);
 }
 
 void find_interfaces(GArray* rx, GArray* tx) {

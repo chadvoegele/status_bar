@@ -34,74 +34,72 @@ void* thinkpad_temp_init(GString* bar_text, GMutex* mutex, GKeyFile* configs) {
 
 gboolean thinkpad_temp_update_text(void* ptr) {
   struct thinkpad_temp_monitor* m;
-  if ((m = (struct thinkpad_temp_monitor*)ptr) != NULL) {
-    FILE* temp_file;
-    char* temp_file_path = "/proc/acpi/ibm/thermal";
-
-    int n_read;
-    int temps[7];
-    temp_file = fopen(temp_file_path, "r");
-    if (temp_file == NULL) {
-      fprintf(stderr, "Can't open temp file %s!\n", temp_file_path);
-      n_read = 0;
-    } else {
-      n_read = fscanf(temp_file, "%*s %d %d %*d %d %d %*d %d %*d %d %d",
-          &temps[0],
-          &temps[1],
-          &temps[2],
-          &temps[3],
-          &temps[4],
-          &temps[5],
-          &temps[6]);
-    }
-
-    if (n_read == 7) {
-      g_string_printf(m->str, "%d %d %d %d %d %d %d",
-          temps[0],
-          temps[1],
-          temps[2],
-          temps[3],
-          temps[4],
-          temps[5],
-          temps[6]);
-
-    } else {
-      g_string_printf(m->str, "!");
-    }
-
-    if (temp_file != NULL)
-      fclose(temp_file);
-
-    g_mutex_lock(m->mutex);
-    m->bar_text = g_string_assign(m->bar_text, m->str->str);
-    g_mutex_unlock(m->mutex);
-
-    return TRUE;
-
-  } else {
+  if ((m = (struct thinkpad_temp_monitor*)ptr) == NULL) {
     fprintf(stderr, "thinkpad_temp monitor not received in update.\n");
     exit(EXIT_FAILURE);
   }
+
+  FILE* temp_file;
+  char* temp_file_path = "/proc/acpi/ibm/thermal";
+
+  int n_read;
+  int temps[7];
+  temp_file = fopen(temp_file_path, "r");
+  if (temp_file == NULL) {
+    fprintf(stderr, "Can't open temp file %s!\n", temp_file_path);
+    n_read = 0;
+  } else {
+    n_read = fscanf(temp_file, "%*s %d %d %*d %d %d %*d %d %*d %d %d",
+        &temps[0],
+        &temps[1],
+        &temps[2],
+        &temps[3],
+        &temps[4],
+        &temps[5],
+        &temps[6]);
+  }
+
+  if (n_read == 7) {
+    g_string_printf(m->str, "%d %d %d %d %d %d %d",
+        temps[0],
+        temps[1],
+        temps[2],
+        temps[3],
+        temps[4],
+        temps[5],
+        temps[6]);
+
+  } else {
+    g_string_printf(m->str, "!");
+  }
+
+  if (temp_file != NULL)
+    fclose(temp_file);
+
+  g_mutex_lock(m->mutex);
+  m->bar_text = g_string_assign(m->bar_text, m->str->str);
+  g_mutex_unlock(m->mutex);
+
+  return TRUE;
 }
 
 int thinkpad_temp_sleep_time(void* ptr) {
   struct thinkpad_temp_monitor* m;
-  if ((m = (struct thinkpad_temp_monitor*)ptr) != NULL) {
-    return 5;
-  } else {
+  if ((m = (struct thinkpad_temp_monitor*)ptr) == NULL) {
     fprintf(stderr, "thinkpad_temp monitor not received in sleep_time.\n");
     exit(EXIT_FAILURE);
   }
+
+  return 5;
 }
 
 void thinkpad_temp_free(void* ptr) {
   struct thinkpad_temp_monitor* m;
-  if ((m = (struct thinkpad_temp_monitor*)ptr) != NULL) {
-    g_string_free(m->str, TRUE);
-    free(m);
-
-  } else {
+  if ((m = (struct thinkpad_temp_monitor*)ptr) == NULL) {
     fprintf(stderr, "thinkpad_temp monitor not received in close.\n");
     exit(EXIT_FAILURE);
   }
+
+  g_string_free(m->str, TRUE);
+  free(m);
 }

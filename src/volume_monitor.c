@@ -90,52 +90,49 @@ int get_vol_mute(long* vol, int* mute) {
 
 gboolean volume_update_text(void* ptr) {
   struct volume_monitor* m;
-  if ((m = (struct volume_monitor*)ptr) != NULL) {
-
-    long vol;
-    int mute;
-    int vol_mute_code = get_vol_mute(&vol, &mute);
-
-    if (vol_mute_code != 0) {
-      g_string_printf(m->str, "!");
-    } else {
-      if (mute == 0 || vol < -999999)  // muted
-        g_string_printf(m->str, "");
-      else
-        g_string_printf(m->str, "%ld", vol/100);
-    }
-
-    g_mutex_lock(m->mutex);
-    m->bar_text = g_string_assign(m->bar_text, m->str->str);
-    g_mutex_unlock(m->mutex);
-
-    return TRUE;
-
-  } else {
+  if ((m = (struct volume_monitor*)ptr) == NULL) {
     fprintf(stderr, "volume monitor not received in update.\n");
     exit(EXIT_FAILURE);
   }
+
+  long vol;
+  int mute;
+  int vol_mute_code = get_vol_mute(&vol, &mute);
+
+  if (vol_mute_code != 0) {
+    g_string_printf(m->str, "!");
+  } else {
+    if (mute == 0 || vol < -999999)  // muted
+      g_string_printf(m->str, "");
+    else
+      g_string_printf(m->str, "%ld", vol/100);
+  }
+
+  g_mutex_lock(m->mutex);
+  m->bar_text = g_string_assign(m->bar_text, m->str->str);
+  g_mutex_unlock(m->mutex);
+
+  return TRUE;
 }
 
 int volume_sleep_time(void* ptr) {
   struct volume_monitor* m;
-  if ((m = (struct volume_monitor*)ptr) != NULL) {
-    return 1;
-  } else {
+  if ((m = (struct volume_monitor*)ptr) == NULL) {
     fprintf(stderr, "volume monitor not received in sleep_time.\n");
     exit(EXIT_FAILURE);
   }
+
+  return 1;
 }
 
 void volume_free(void* ptr) {
   struct volume_monitor* m;
-  if ((m = (struct volume_monitor*)ptr) != NULL) {
-    g_string_free(m->str, TRUE);
-
-    free(m);
-
-  } else {
+  if ((m = (struct volume_monitor*)ptr) == NULL) {
     fprintf(stderr, "volume monitor not received in close.\n");
     exit(EXIT_FAILURE);
   }
+
+  g_string_free(m->str, TRUE);
+
+  free(m);
 }
