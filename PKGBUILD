@@ -3,7 +3,7 @@
 pkgname=status_bar-git
 pkgver=1
 pkgrel=1
-pkgdesc="Status bar build on top of dzen"
+pkgdesc="Status bar for displaying system information."
 arch=('i686' 'x86_64')
 license=('LGPL')
 depends=('lemonbar-git' 'ttf-ionicons')

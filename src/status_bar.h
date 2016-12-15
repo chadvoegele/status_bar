@@ -26,7 +26,7 @@ struct monitor_refs {
 };
 
 struct status_bar {
-  FILE* dzen_pipe;
+  FILE* display_cmd_pipe;
   GKeyFile* configs;
   int n_monitors;
   struct monitor_refs* monitors;

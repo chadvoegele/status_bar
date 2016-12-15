@@ -57,7 +57,7 @@ void fail_on_error(GError* error) {
   }
 }
 
-void build_dzen_str(GKeyFile* configs, GString* str) {
+void build_display_cmd_str(GKeyFile* configs, GString* str) {
   GError* error = NULL;
   char* fg_color = g_key_file_get_string(configs, "configs", "fgcolor", &error);
   fail_on_error(error);
