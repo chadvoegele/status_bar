@@ -33,7 +33,7 @@ void init_status_bar(struct status_bar* status_bar) {
 
   GString* display_cmd_str = g_string_new(NULL);
   build_display_cmd_str(status_bar->configs, display_cmd_str);
-  status_bar->display_cmd_pipe = popen(display_cmd_str->str, "w");
+  status_bar->display_pipe = popen(display_cmd_str->str, "w");
   g_string_free(display_cmd_str, TRUE);
 
   status_bar->loop = g_main_loop_new(g_main_context_default(), FALSE);
@@ -109,15 +109,15 @@ gboolean update_status_bar(void* ptr) {
       mr->text->str);
   g_mutex_unlock(&mr->mutex);
 
-  fprintf(status_bar->display_cmd_pipe, "%s\n", output->str);
-  fflush(status_bar->display_cmd_pipe);
+  fprintf(status_bar->display_pipe, "%s\n", output->str);
+  fflush(status_bar->display_pipe);
   g_string_free(output, TRUE);
 
   return TRUE;
 }
 
 void close_status_bar(struct status_bar* status_bar) {
-  pclose(status_bar->display_cmd_pipe);
+  pclose(status_bar->display_pipe);
   g_key_file_free(status_bar->configs);
 
   int i;
