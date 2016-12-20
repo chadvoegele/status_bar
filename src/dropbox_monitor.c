@@ -45,11 +45,8 @@ void* dropbox_init(GString* bar_text, GMutex* mutex, GKeyFile* configs) {
 }
 
 gboolean dropbox_update_text(void* ptr) {
-  struct dropbox_monitor* m;
-  if ((m = (struct dropbox_monitor*)ptr) == NULL) {
-    fprintf(stderr, "Dropbox monitor not received in update.\n");
-    exit(EXIT_FAILURE);
-  }
+  struct dropbox_monitor* m = (struct dropbox_monitor*)ptr;
+  monitor_null_check(m, "dropbox_monitor", "update");
 
   char* output;
   output = m->err;
@@ -97,21 +94,12 @@ gboolean dropbox_update_text(void* ptr) {
 }
 
 int dropbox_sleep_time(void* ptr) {
-  struct dropbox_monitor* m;
-  if ((m = (struct dropbox_monitor*)ptr) == NULL) {
-    fprintf(stderr, "Dropbox monitor not received in sleep_time.\n");
-    exit(EXIT_FAILURE);
-  }
-
   return 1;
 }
 
 void dropbox_free(void* ptr) {
-  struct dropbox_monitor* m;
-  if ((m = (struct dropbox_monitor*)ptr) == NULL) {
-    fprintf(stderr, "Dropbox monitor not received in close.\n");
-    exit(EXIT_FAILURE);
-  }
+  struct dropbox_monitor* m = (struct dropbox_monitor*)ptr;
+  monitor_null_check(m, "dropbox_monitor", "free");
 
   free(m->err);
 

@@ -49,11 +49,8 @@ void* nginx_init(GString* bar_text, GMutex* mutex, GKeyFile* configs) {
 }
 
 gboolean nginx_update_text(void* ptr) {
-  struct nginx_monitor* m;
-  if ((m = (struct nginx_monitor*)ptr) == NULL) {
-    fprintf(stderr, "nginx monitor not received in update_text.\n");
-    exit(EXIT_FAILURE);
-  }
+  struct nginx_monitor* m = (struct nginx_monitor*)ptr;
+  monitor_null_check(m, "nginx_monitor", "update");
 
   CURLcode code = download_data(m->curl, m->request_str->str, m->res);
   char* output;
@@ -72,21 +69,12 @@ gboolean nginx_update_text(void* ptr) {
 }
 
 int nginx_sleep_time(void* ptr) {
-  struct nginx_monitor* m;
-  if ((m = (struct nginx_monitor*)ptr) == NULL) {
-    fprintf(stderr, "nginx monitor not received in sleep_time.\n");
-    exit(EXIT_FAILURE);
-  }
-
   return 5;
 }
 
 void nginx_free(void* ptr) {
-  struct nginx_monitor* m;
-  if ((m = (struct nginx_monitor*)ptr) == NULL) {
-    fprintf(stderr, "nginx monitor not received in close.\n");
-    exit(EXIT_FAILURE);
-  }
+  struct nginx_monitor* m = (struct nginx_monitor*)ptr;
+  monitor_null_check(m, "nginx_monitor", "free");
 
   free(m->err);
   g_string_free(m->res, TRUE);

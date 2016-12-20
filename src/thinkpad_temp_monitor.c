@@ -33,11 +33,8 @@ void* thinkpad_temp_init(GString* bar_text, GMutex* mutex, GKeyFile* configs) {
 }
 
 gboolean thinkpad_temp_update_text(void* ptr) {
-  struct thinkpad_temp_monitor* m;
-  if ((m = (struct thinkpad_temp_monitor*)ptr) == NULL) {
-    fprintf(stderr, "thinkpad_temp monitor not received in update.\n");
-    exit(EXIT_FAILURE);
-  }
+  struct thinkpad_temp_monitor* m = (struct thinkpad_temp_monitor*)ptr;
+  monitor_null_check(m, "thinkpad_temp_monitor", "update");
 
   FILE* temp_file;
   char* temp_file_path = "/proc/acpi/ibm/thermal";
@@ -84,21 +81,12 @@ gboolean thinkpad_temp_update_text(void* ptr) {
 }
 
 int thinkpad_temp_sleep_time(void* ptr) {
-  struct thinkpad_temp_monitor* m;
-  if ((m = (struct thinkpad_temp_monitor*)ptr) == NULL) {
-    fprintf(stderr, "thinkpad_temp monitor not received in sleep_time.\n");
-    exit(EXIT_FAILURE);
-  }
-
   return 5;
 }
 
 void thinkpad_temp_free(void* ptr) {
-  struct thinkpad_temp_monitor* m;
-  if ((m = (struct thinkpad_temp_monitor*)ptr) == NULL) {
-    fprintf(stderr, "thinkpad_temp monitor not received in close.\n");
-    exit(EXIT_FAILURE);
-  }
+  struct thinkpad_temp_monitor* m = (struct thinkpad_temp_monitor*)ptr;
+  monitor_null_check(m, "thinkpad_temp_monitor", "free");
 
   g_string_free(m->str, TRUE);
   free(m);

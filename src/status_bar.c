@@ -132,3 +132,10 @@ void close_status_bar(struct status_bar* status_bar) {
 
   g_main_loop_unref(status_bar->loop);
 }
+
+void monitor_null_check(void* ptr, const char* monitor_name, const char* monitor_fn) {
+  if (ptr == NULL) {
+    fprintf(stderr, "%s not received in %s.\n", monitor_name, monitor_fn);
+    exit(EXIT_FAILURE);
+  }
+}

@@ -35,11 +35,8 @@ void* clock_init(GString* bar_text, GMutex* mutex, GKeyFile* configs) {
 }
 
 gboolean clock_update_text(void* ptr) {
-  struct clock_monitor* m;
-  if ((m = (struct clock_monitor*)ptr) == NULL) {
-    fprintf(stderr, "clock monitor not received in update.\n");
-    exit(EXIT_FAILURE);
-  }
+  struct clock_monitor* m = (struct clock_monitor*)ptr;
+  monitor_null_check(m, "clock_monitor", "update");
 
   time_t rawtime;
   struct tm timeinfo;
@@ -63,21 +60,12 @@ gboolean clock_update_text(void* ptr) {
 }
 
 int clock_sleep_time(void* ptr) {
-  struct clock_monitor* m;
-  if ((m = (struct clock_monitor*)ptr) == NULL) {
-    fprintf(stderr, "clock monitor not received in sleep_time.\n");
-    exit(EXIT_FAILURE);
-  }
-
   return 5;
 }
 
 void clock_free(void* ptr) {
-  struct clock_monitor* m;
-  if ((m = (struct clock_monitor*)ptr) == NULL) {
-    fprintf(stderr, "clock monitor not received in close.\n");
-    exit(EXIT_FAILURE);
-  }
+  struct clock_monitor* m = (struct clock_monitor*)ptr;
+  monitor_null_check(m, "clock_monitor", "free");
 
   free(m->str);
   free(m);

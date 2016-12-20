@@ -41,11 +41,8 @@ void* net_init(GString* bar_text, GMutex* mutex, GKeyFile* configs) {
 }
 
 gboolean net_update_text(void* ptr) {
-  struct net_monitor* m;
-  if ((m = (struct net_monitor*)ptr) == NULL) {
-    fprintf(stderr, "net monitor not received in update.\n");
-    exit(EXIT_FAILURE);
-  }
+  struct net_monitor* m = (struct net_monitor*)ptr;
+  monitor_null_check(m, "net_monitor", "update");
 
   int this_rx = total_bytes(m->rx);
   int this_tx = total_bytes(m->tx);
@@ -66,21 +63,12 @@ gboolean net_update_text(void* ptr) {
 }
 
 int net_sleep_time(void* ptr) {
-  struct net_monitor* m;
-  if ((m = (struct net_monitor*)ptr) == NULL) {
-    fprintf(stderr, "net monitor not received in sleep_time.\n");
-    exit(EXIT_FAILURE);
-  }
-
   return 1;
 }
 
 void net_free(void* ptr) {
-  struct net_monitor* m;
-  if ((m = (struct net_monitor*)ptr) == NULL) {
-    fprintf(stderr, "net monitor not received in close.\n");
-    exit(EXIT_FAILURE);
-  }
+  struct net_monitor* m = (struct net_monitor*)ptr;
+  monitor_null_check(m, "net_monitor", "free");
 
   g_string_free(m->str, TRUE);
 

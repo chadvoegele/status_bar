@@ -33,11 +33,8 @@ void* thinkpad_fan_init(GString* bar_text, GMutex* mutex, GKeyFile* configs) {
 }
 
 gboolean thinkpad_fan_update_text(void* ptr) {
-  struct thinkpad_fan_monitor* m;
-  if ((m = (struct thinkpad_fan_monitor*)ptr) == NULL) {
-    fprintf(stderr, "thinkpad_fan monitor not received in update.\n");
-    exit(EXIT_FAILURE);
-  }
+  struct thinkpad_fan_monitor* m = (struct thinkpad_fan_monitor*)ptr;
+  monitor_null_check(m, "thinkpad_fan_monitor", "update");
 
   int n_read = 0;
 
@@ -71,21 +68,12 @@ gboolean thinkpad_fan_update_text(void* ptr) {
 }
 
 int thinkpad_fan_sleep_time(void* ptr) {
-  struct thinkpad_fan_monitor* m;
-  if ((m = (struct thinkpad_fan_monitor*)ptr) == NULL) {
-    fprintf(stderr, "thinkpad_fan monitor not received in sleep_time.\n");
-    exit(EXIT_FAILURE);
-  }
-
   return 5;
 }
 
 void thinkpad_fan_free(void* ptr) {
-  struct thinkpad_fan_monitor* m;
-  if ((m = (struct thinkpad_fan_monitor*)ptr) == NULL) {
-    fprintf(stderr, "thinkpad_fan monitor not received in close.\n");
-    exit(EXIT_FAILURE);
-  }
+  struct thinkpad_fan_monitor* m = (struct thinkpad_fan_monitor*)ptr;
+  monitor_null_check(m, "thinkpad_fan_monitor", "free");
 
   g_string_free(m->str, TRUE);
   free(m);

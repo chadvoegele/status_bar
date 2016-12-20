@@ -89,11 +89,8 @@ int get_vol_mute(long* vol, int* mute) {
 }
 
 gboolean volume_update_text(void* ptr) {
-  struct volume_monitor* m;
-  if ((m = (struct volume_monitor*)ptr) == NULL) {
-    fprintf(stderr, "volume monitor not received in update.\n");
-    exit(EXIT_FAILURE);
-  }
+  struct volume_monitor* m = (struct volume_monitor*)ptr;
+  monitor_null_check(m, "volume_monitor", "update");
 
   long vol;
   int mute;
@@ -116,21 +113,12 @@ gboolean volume_update_text(void* ptr) {
 }
 
 int volume_sleep_time(void* ptr) {
-  struct volume_monitor* m;
-  if ((m = (struct volume_monitor*)ptr) == NULL) {
-    fprintf(stderr, "volume monitor not received in sleep_time.\n");
-    exit(EXIT_FAILURE);
-  }
-
   return 1;
 }
 
 void volume_free(void* ptr) {
-  struct volume_monitor* m;
-  if ((m = (struct volume_monitor*)ptr) == NULL) {
-    fprintf(stderr, "volume monitor not received in close.\n");
-    exit(EXIT_FAILURE);
-  }
+  struct volume_monitor* m = (struct volume_monitor*)ptr;
+  monitor_null_check(m, "volume_monitor", "free");
 
   g_string_free(m->str, TRUE);
 

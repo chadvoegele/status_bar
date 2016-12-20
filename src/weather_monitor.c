@@ -50,11 +50,8 @@ void* weather_init(GString* bar_text, GMutex* mutex, GKeyFile* configs) {
 }
 
 gboolean weather_update_text(void* ptr) {
-  struct weather_monitor* m;
-  if ((m = (struct weather_monitor*)ptr) == NULL) {
-    fprintf(stderr, "Weather monitor not received in update.\n");
-    exit(EXIT_FAILURE);
-  }
+  struct weather_monitor* m = (struct weather_monitor*)ptr;
+  monitor_null_check(m, "weather_monitor", "update");
 
   char* output;
 
@@ -74,21 +71,12 @@ gboolean weather_update_text(void* ptr) {
 }
 
 int weather_sleep_time(void* ptr) {
-  struct weather_monitor* m;
-  if ((m = (struct weather_monitor*)ptr) == NULL) {
-    fprintf(stderr, "Weather monitor not received in sleep_time.\n");
-    exit(EXIT_FAILURE);
-  }
-
   return 3600;
 }
 
 void weather_free(void* ptr) {
-  struct weather_monitor* m;
-  if ((m = (struct weather_monitor*)ptr) == NULL) {
-    fprintf(stderr, "Weather monitor not received in close.\n");
-    exit(EXIT_FAILURE);
-  }
+  struct weather_monitor* m = (struct weather_monitor*)ptr;
+  monitor_null_check(m, "weather_monitor", "free");
 
   free(m->err);
   g_string_free(m->res, TRUE);

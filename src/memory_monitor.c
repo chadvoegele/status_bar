@@ -36,11 +36,8 @@ void* memory_init(GString* bar_text, GMutex* mutex, GKeyFile* configs) {
 }
 
 gboolean memory_update_text(void* ptr) {
-  struct memory_monitor* m;
-  if ((m = (struct memory_monitor*)ptr) == NULL) {
-    fprintf(stderr, "memory monitor not received in update.\n");
-    exit(EXIT_FAILURE);
-  }
+  struct memory_monitor* m = (struct memory_monitor*)ptr;
+  monitor_null_check(m, "memory_monitor", "update");
 
   char* mem_file_path = "/proc/meminfo";
   FILE* mem_file = fopen(mem_file_path, "r");
@@ -79,21 +76,12 @@ gboolean memory_update_text(void* ptr) {
 }
 
 int memory_sleep_time(void* ptr) {
-  struct memory_monitor* m;
-  if ((m = (struct memory_monitor*)ptr) == NULL) {
-    fprintf(stderr, "memory monitor not received in sleep_time.\n");
-    exit(EXIT_FAILURE);
-  }
-
   return 30;
 }
 
 void memory_free(void* ptr) {
-  struct memory_monitor* m;
-  if ((m = (struct memory_monitor*)ptr) == NULL) {
-    fprintf(stderr, "memory monitor not received in close.\n");
-    exit(EXIT_FAILURE);
-  }
+  struct memory_monitor* m = (struct memory_monitor*)ptr;
+  monitor_null_check(m, "memory_monitor", "free");
 
   g_string_free(m->str, TRUE);
   free(m);

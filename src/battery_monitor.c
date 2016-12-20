@@ -66,11 +66,8 @@ void* battery_init(GString* bar_text, GMutex* mutex, GKeyFile* configs) {
 }
 
 gboolean battery_update_text(void* ptr) {
-  struct battery_monitor* m;
-  if ((m = (struct battery_monitor*)ptr) == NULL) {
-    fprintf(stderr, "battery monitor not received in update.\n");
-    exit(EXIT_FAILURE);
-  }
+  struct battery_monitor* m = (struct battery_monitor*)ptr;
+  monitor_null_check(m, "battery_monitor", "update");
 
   int full, now;
   int n_full = 0;
@@ -121,21 +118,12 @@ gboolean battery_update_text(void* ptr) {
 }
 
 int battery_sleep_time(void* ptr) {
-  struct battery_monitor* m;
-  if ((m = (struct battery_monitor*)ptr) == NULL) {
-    fprintf(stderr, "battery monitor not received in sleep_time.\n");
-    exit(EXIT_FAILURE);
-  }
-
   return 300;
 }
 
 void battery_free(void* ptr) {
-  struct battery_monitor* m;
-  if ((m = (struct battery_monitor*)ptr) == NULL) {
-    fprintf(stderr, "battery monitor not received in close.\n");
-    exit(EXIT_FAILURE);
-  }
+  struct battery_monitor* m = (struct battery_monitor*)ptr;
+  monitor_null_check(m, "battery_monitor", "free");
 
   g_string_free(m->str, TRUE);
   g_string_free(m->alert_fgcolor, TRUE);

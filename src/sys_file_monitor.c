@@ -32,11 +32,8 @@ void append_filename(GArray* filenames, char* filename) {
 }
 
 gboolean sys_file_update_text(void* ptr) {
-  struct sys_file_monitor* m;
-  if ((m = (struct sys_file_monitor*)ptr) == NULL) {
-    fprintf(stderr, "sys_file monitor not received in update.\n");
-    exit(EXIT_FAILURE);
-  }
+  struct sys_file_monitor* m = (struct sys_file_monitor*)ptr;
+  monitor_null_check(m, "sys_file_monitor", "update");
 
   int n_temps = m->temp_filenames->len;
 
@@ -74,21 +71,12 @@ gboolean sys_file_update_text(void* ptr) {
 }
 
 int sys_file_sleep_time(void* ptr) {
-  struct sys_file_monitor* m;
-  if ((m = (struct sys_file_monitor*)ptr) == NULL) {
-    fprintf(stderr, "sys_file monitor not received in sleep_time.\n");
-    exit(EXIT_FAILURE);
-  }
-
   return 5;
 }
 
 void sys_file_free(void* ptr) {
-  struct sys_file_monitor* m;
-  if ((m = (struct sys_file_monitor*)ptr) == NULL) {
-    fprintf(stderr, "sys_file monitor not received in close.\n");
-    exit(EXIT_FAILURE);
-  }
+  struct sys_file_monitor* m = (struct sys_file_monitor*)ptr;
+  monitor_null_check(m, "sys_file_monitor", "free");
 
   for (int i = 0; i < m->temp_filenames->len; i++) {
     g_string_free(g_array_index(m->temp_filenames, GString*, i), TRUE);
