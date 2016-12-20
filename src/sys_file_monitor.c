@@ -56,15 +56,17 @@ gboolean sys_file_update_text(void* ptr) {
     }
   }
 
+  m->str = g_string_set_size(m->str, 0);
+  g_string_append_unichar(m->str, m->icon);
   if (n_read == n_temps) {
     if (n_temps == 1) {
-      g_string_printf(m->str, "U+%04"G_GINT32_FORMAT"%d", m->icon, m->convert(min_temp));
+      g_string_append_printf(m->str, "%d", m->convert(min_temp));
     } else {
-      g_string_printf(m->str, "U+%04"G_GINT32_FORMAT"%d\\%d", m->icon, m->convert(min_temp), m->convert(max_temp));
+      g_string_append_printf(m->str, "%d\\%d", m->convert(min_temp), m->convert(max_temp));
     }
 
   } else {
-    g_string_printf(m->str, "U+%04"G_GINT32_FORMAT"X!", m->icon);
+    g_string_append_printf(m->str, "X!");
   }
 
   g_mutex_lock(m->mutex);
