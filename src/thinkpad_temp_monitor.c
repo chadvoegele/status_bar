@@ -7,6 +7,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <glib.h>
+#include <limits.h>
 
 #include "status_bar.h"
 #include "thinkpad_temp_monitor.h"
@@ -57,14 +58,17 @@ gboolean thinkpad_temp_update_text(void* ptr) {
   }
 
   if (n_read == 7) {
-    g_string_printf(m->str, "%d %d %d %d %d %d %d",
-        temps[0],
-        temps[1],
-        temps[2],
-        temps[3],
-        temps[4],
-        temps[5],
-        temps[6]);
+    int min_temp = INT_MAX;
+    int max_temp = INT_MIN;
+
+    for (int i = 0; i < 7; i++) {
+      int temp = temps[i];
+      min_temp = temp < min_temp ? temp : min_temp;
+      max_temp = temp > max_temp ? temp : max_temp;
+    }
+
+    g_string_printf(m->str, "%d\\%d",
+        min_temp, max_temp);
 
   } else {
     g_string_printf(m->str, "!");

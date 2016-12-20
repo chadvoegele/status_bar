@@ -6,6 +6,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <glib.h>
+#include <limits.h>
 
 #include "status_bar.h"
 #include "sys_file_monitor.h"
@@ -37,25 +38,30 @@ gboolean sys_file_update_text(void* ptr) {
 
   int n_temps = m->temp_filenames->len;
 
-  g_string_truncate(m->str, 0);
+  int min_temp = INT_MAX;
+  int max_temp = INT_MIN;
   int n_read = 0;
   for (int i_file = 0; i_file < n_temps; i_file++) {
     char* temp_file_path = g_array_index(m->temp_filenames, GString*, i_file)->str;
-    FILE* temp_file;
-    int temp;
-    temp_file = fopen(temp_file_path, "r");
+    FILE* temp_file = fopen(temp_file_path, "r");
     if (temp_file == NULL) {
       fprintf(stderr, "Can't open temp file %s!\n", temp_file_path);
     } else {
+      int temp;
       fscanf(temp_file, "%d", &temp);
+      min_temp = temp < min_temp ? temp : min_temp;
+      max_temp = temp > max_temp ? temp : max_temp;
       n_read++;
-      g_string_append_printf(m->str, " %d", m->convert(temp));
       fclose(temp_file);
     }
   }
 
   if (n_read == n_temps) {
-    g_string_prepend_unichar(m->str, m->icon);
+    if (n_temps == 1) {
+      g_string_printf(m->str, "U+%04"G_GINT32_FORMAT"%d", m->icon, m->convert(min_temp));
+    } else {
+      g_string_printf(m->str, "U+%04"G_GINT32_FORMAT"%d\\%d", m->icon, m->convert(min_temp), m->convert(max_temp));
+    }
 
   } else {
     g_string_printf(m->str, "U+%04"G_GINT32_FORMAT"X!", m->icon);
