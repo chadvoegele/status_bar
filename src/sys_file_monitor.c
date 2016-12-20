@@ -39,21 +39,19 @@ gboolean sys_file_update_text(void* ptr) {
 
   g_string_truncate(m->str, 0);
   int n_read = 0;
-  for (; n_read < n_temps; n_read++) {
-    char* temp_file_path = g_array_index(m->temp_filenames, GString*, n_read)->str;
+  for (int i_file = 0; i_file < n_temps; i_file++) {
+    char* temp_file_path = g_array_index(m->temp_filenames, GString*, i_file)->str;
     FILE* temp_file;
     int temp;
     temp_file = fopen(temp_file_path, "r");
     if (temp_file == NULL) {
       fprintf(stderr, "Can't open temp file %s!\n", temp_file_path);
-      n_read--;
     } else {
       fscanf(temp_file, "%d", &temp);
+      n_read++;
       g_string_append_printf(m->str, " %d", m->convert(temp));
-    }
-
-    if (temp_file != NULL)
       fclose(temp_file);
+    }
   }
 
   if (n_read == n_temps) {
