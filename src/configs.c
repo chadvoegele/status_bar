@@ -68,11 +68,9 @@ void build_display_cmd_str(GKeyFile* configs, GString* str) {
 
   error = NULL;
   char* width = g_key_file_get_string(configs, "configs", "width", &error);
-  fail_on_error(error);
 
   error = NULL;
   char* height = g_key_file_get_string(configs, "configs", "height", &error);
-  fail_on_error(error);
 
   error = NULL;
   char* font_size = g_key_file_get_string(configs, "configs", "font_size", &error);
@@ -82,12 +80,22 @@ void build_display_cmd_str(GKeyFile* configs, GString* str) {
   char* icon_font_size = g_key_file_get_string(configs, "configs", "icon_font_size", &error);
   fail_on_error(error);
 
-  g_string_printf(str, "lemonbar -F \\%s -B \\%s -g \"%sx%s+0+0\" -f \"-*-terminus-medium-*-*-*-%s-*-*-*-*-*-*-*\" -f \"-*-ionicons-medium-*-*-*-%s-*-*-*-*-*-*-*\"",
-      fg_color,
-      bg_color,
-      width,
-      height,
-      font_size,
+  str = g_string_truncate(str, 0);
+  g_string_append_printf(str, "lemonbar");
+  g_string_append_printf(str, " -F \\%s", fg_color);
+  g_string_append_printf(str, " -B \\%s", bg_color);
+  g_string_append_printf(str, " -g \"");
+  if (width) {
+    g_string_append_printf(str, "%s", width);
+  }
+  g_string_append_printf(str, "x");
+  if (height) {
+    g_string_append_printf(str, "%s", height);
+  }
+  g_string_append_printf(str, "+0+0\"");
+  g_string_append_printf(str, " -f \"-*-terminus-medium-*-*-*-%s-*-*-*-*-*-*-*\"",
+      font_size);
+  g_string_append_printf(str, " -f \"-*-ionicons-medium-*-*-*-%s-*-*-*-*-*-*-*\"",
       icon_font_size);
 
   g_free(fg_color);
