@@ -62,7 +62,7 @@ gboolean sys_file_update_text(void* ptr) {
     if (n_temps == 1) {
       g_string_append_printf(m->str, "%d", m->convert(min_temp));
     } else {
-      g_string_append_printf(m->str, "%d\\%d", m->convert(min_temp), m->convert(max_temp));
+      g_string_append_printf(m->str, "%d%d", m->convert(min_temp), m->convert(max_temp));
     }
 
   } else {
