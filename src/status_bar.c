@@ -9,6 +9,7 @@
 #include <glib-unix.h>
 #include <sys/unistd.h>
 #include <string.h>
+#include <limits.h>
 
 #include "status_bar.h"
 #include "signal_handler.h"
@@ -47,7 +48,7 @@ void init_status_bar(struct status_bar* status_bar) {
 
   status_bar->monitors = malloc(sizeof(struct monitor_refs)*status_bar->n_monitors);
 
-  int min_update = -1;
+  int min_update = INT_MAX;
   int i;
   for (i = 0; i < status_bar->n_monitors; i++) {
     struct monitor_refs* mr = &(status_bar->monitors[i]);
@@ -61,7 +62,7 @@ void init_status_bar(struct status_bar* status_bar) {
     int seconds = mr->fns.sleep_time(mr->monitor);
     g_timeout_add_seconds(seconds, mr->fns.update_text, mr->monitor);
 
-    if (min_update == -1 || min_update > seconds)
+    if (min_update > seconds)
       min_update = seconds;
   }
 
