@@ -55,7 +55,7 @@ gboolean cpu_usage_update_text(void* ptr) {
     m->last_idle = 1U;
 
   } else {
-    n_read = fscanf(time_file, "%*s %d %d %d %d %d %d %d %d %d %d",
+    n_read = fscanf(time_file, "%*s %d %d %d %d %d %d %d %d %d %d\n",
         &times[0],
         &times[1],
         &times[2],
@@ -66,12 +66,14 @@ gboolean cpu_usage_update_text(void* ptr) {
         &times[7],
         &times[8],
         &times[9]);
+    int ncpus = 0;
+    while (fscanf(time_file, "cpu%d %*d %*d %*d %*d %*d %*d %*d %*d %*d %*d\n", &ncpus));
     unsigned int total = cpu_usage_calc_total(times);
     unsigned int idle = cpu_usage_calc_idle(times);
     unsigned int diff_total = total - m->last_total;
     unsigned int diff_idle = idle - m->last_idle;
     double idle_pct = diff_idle / (double)diff_total;
-    usage_pct = 1 - idle_pct;
+    usage_pct = (ncpus+1)*(1 - idle_pct);
     m->last_total = total;
     m->last_idle = idle;
   }
