@@ -9,15 +9,14 @@
 #include <limits.h>
 
 #include "status_bar.h"
+#include "base_monitor.h"
 #include "sys_file_monitor.h"
 
 void* sys_file_init_config(gunichar icon, GArray* temp_filenames,
-    int(*convert)(int),
-    GString* bar_text, GMutex* mutex, GKeyFile* configs) {
+    int(*convert)(int), GKeyFile* configs) {
   struct sys_file_monitor* m = malloc(sizeof(struct sys_file_monitor));
 
-  m->bar_text = bar_text;
-  m->mutex = mutex;
+  m->base = base_monitor_init(sys_file_sleep_time, sys_file_update_text, sys_file_free);
 
   m->icon = icon;
   m->temp_filenames = temp_filenames;
@@ -69,9 +68,9 @@ gboolean sys_file_update_text(void* ptr) {
     g_string_append_printf(m->str, "X!");
   }
 
-  g_mutex_lock(m->mutex);
-  m->bar_text = g_string_assign(m->bar_text, m->str->str);
-  g_mutex_unlock(m->mutex);
+  g_mutex_lock(m->base->mutex);
+  m->base->text = g_string_assign(m->base->text, m->str->str);
+  g_mutex_unlock(m->base->mutex);
 
   return TRUE;
 }
@@ -90,5 +89,8 @@ void sys_file_free(void* ptr) {
   g_array_free(m->temp_filenames, TRUE);
 
   g_string_free(m->str, TRUE);
+
+  base_monitor_free(m->base);
+
   free(m);
 }

@@ -11,25 +11,11 @@
 // https://airtower.wordpress.com/2010/06/16/catch-sigterm-exit-gracefully/
 extern volatile sig_atomic_t is_running_global;
 
-struct monitor_fns {
-  void* (*init)(GString*, GMutex*, GKeyFile*);
-  int (*sleep_time)(void*);
-  gboolean (*update_text)(void*);
-  void (*free)(void*);
-};
-
-struct monitor_refs {
-  struct monitor_fns fns;
-  GString* text;
-  GMutex mutex;
-  void* monitor;
-};
-
 struct status_bar {
   FILE* display_pipe;
   GKeyFile* configs;
-  int n_monitors;
-  struct monitor_refs* monitors;
+  gsize n_monitors;
+  void** monitors;
   GMainLoop* loop;
 };
 

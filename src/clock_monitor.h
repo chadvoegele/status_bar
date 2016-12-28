@@ -8,17 +8,16 @@
 #include <glib.h>
 
 #include "status_bar.h"
+#include "base_monitor.h"
 
 struct clock_monitor {
-  GString* bar_text;
-  GMutex* mutex;
+  struct base_monitor* base;
 
   gboolean colon_on;
   char* str;
 };
 
-struct monitor_fns clock_monitor_fns();
-void* clock_init(GString*, GMutex*, GKeyFile*);
+void* clock_init(GKeyFile*);
 gboolean clock_update_text(void*);
 int clock_sleep_time(void*);
 void clock_free(void*);

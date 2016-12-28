@@ -12,6 +12,7 @@
 #include <limits.h>
 
 #include "status_bar.h"
+#include "base_monitor.h"
 #include "signal_handler.h"
 
 #include "configs.h"
@@ -42,40 +43,27 @@ void init_status_bar(struct status_bar* status_bar) {
   g_unix_signal_add(SIGINT, quit_loop, status_bar->loop);
   g_unix_signal_add(SIGTERM, quit_loop, status_bar->loop);
 
-  GArray* fns;
-  init_monitors(status_bar->configs, &fns);
-  status_bar->n_monitors = fns->len;
-
-  status_bar->monitors = malloc(sizeof(struct monitor_refs)*status_bar->n_monitors);
+  init_monitors(status_bar->configs, &status_bar->n_monitors, &status_bar->monitors);
 
   int min_update = INT_MAX;
-  int i;
-  for (i = 0; i < status_bar->n_monitors; i++) {
-    struct monitor_refs* mr = &(status_bar->monitors[i]);
-
-    g_mutex_init(&mr->mutex);
-    mr->text = g_string_new(NULL);
-    mr->fns = g_array_index(fns, struct monitor_fns, i);
-
-    mr->monitor = mr->fns.init(mr->text, &mr->mutex, status_bar->configs);
-
-    int seconds = mr->fns.sleep_time(mr->monitor);
-    g_timeout_add_seconds(seconds, mr->fns.update_text, mr->monitor);
+  for (int i = 0; i < status_bar->n_monitors; i++) {
+    void* m = status_bar->monitors[i];
+    struct base_monitor* bm = ((struct base_monitor_base*)m)->base;
+    int seconds = bm->sleep_time(m);
+    g_timeout_add_seconds(seconds, bm->update_text, m);
 
     if (min_update > seconds)
       min_update = seconds;
   }
 
   g_timeout_add_seconds(min_update, update_status_bar, status_bar);
-
-  g_array_free(fns, TRUE);
 }
 
 void run_status_bar(struct status_bar* status_bar) {
-  int i;
-  for (i = 0; i < status_bar->n_monitors; i++) {
-    struct monitor_refs* mr = &(status_bar->monitors[i]);
-    mr->fns.update_text(mr->monitor);
+  for (int i = 0; i < status_bar->n_monitors; i++) {
+    void* m = status_bar->monitors[i];
+    struct base_monitor* bm = ((struct base_monitor_base*)m)->base;
+    bm->update_text(m);
   }
   update_status_bar(status_bar);
 
@@ -89,26 +77,25 @@ gboolean update_status_bar(void* ptr) {
     exit(EXIT_FAILURE);
   }
 
-  struct monitor_refs* mr;
   GString* output = g_string_new(NULL);
-  int i;
-  for (i = 0; i < status_bar->n_monitors-1; i++) {
-    mr = &status_bar->monitors[i];
+  for (int i = 0; i < status_bar->n_monitors-1; i++) {
+    void* m = status_bar->monitors[i];
+    struct base_monitor* bm = ((struct base_monitor_base*)m)->base;
 
     if (i != 0) {
       output = g_string_append(output, " | ");
     }
 
-    g_mutex_lock(&mr->mutex);
-    g_string_append_printf(output, "%s", mr->text->str);
-    g_mutex_unlock(&mr->mutex);
+    g_mutex_lock(bm->mutex);
+    g_string_append_printf(output, "%s", bm->text->str);
+    g_mutex_unlock(bm->mutex);
   }
 
-  mr = &status_bar->monitors[status_bar->n_monitors-1];
-  g_mutex_lock(&mr->mutex);
-  g_string_append_printf(output, "%%{r}%s",
-      mr->text->str);
-  g_mutex_unlock(&mr->mutex);
+  void* m = status_bar->monitors[status_bar->n_monitors-1];
+  struct base_monitor* bm = ((struct base_monitor_base*)m)->base;
+  g_mutex_lock(bm->mutex);
+  g_string_append_printf(output, "%%{r}%s", bm->text->str);
+  g_mutex_unlock(bm->mutex);
 
   fprintf(status_bar->display_pipe, "%s\n", output->str);
   fflush(status_bar->display_pipe);
@@ -121,12 +108,10 @@ void close_status_bar(struct status_bar* status_bar) {
   pclose(status_bar->display_pipe);
   g_key_file_free(status_bar->configs);
 
-  int i;
-  for (i = 0; i < status_bar->n_monitors; i++) {
-    struct monitor_refs* mr = &(status_bar->monitors[i]);
-    g_string_free(mr->text, TRUE);
-    mr->fns.free(mr->monitor);
-    g_mutex_clear(&mr->mutex);
+  for (int i = 0; i < status_bar->n_monitors; i++) {
+    void* m = status_bar->monitors[i];
+    struct base_monitor* bm = ((struct base_monitor_base*)m)->base;
+    bm->free(m);
   }
 
   free(status_bar->monitors);

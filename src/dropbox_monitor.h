@@ -9,10 +9,10 @@
 #include <sys/un.h>
 
 #include "status_bar.h"
+#include "base_monitor.h"
 
 struct dropbox_monitor {
-  GString* bar_text;
-  GMutex* mutex;
+  struct base_monitor* base;
 
   struct sockaddr_un remote;
   int addr_len;
@@ -24,8 +24,7 @@ struct dropbox_monitor {
   GString* response;
 };
 
-struct monitor_fns dropbox_monitor_fns();
-void* dropbox_init(GString*, GMutex*, GKeyFile*);
+void* dropbox_init(GKeyFile*);
 gboolean dropbox_update_text(void*);
 int dropbox_sleep_time(void*);
 void dropbox_free(void*);

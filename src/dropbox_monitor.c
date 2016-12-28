@@ -11,23 +11,13 @@
 #include <sys/un.h>
 
 #include "status_bar.h"
+#include "base_monitor.h"
 #include "dropbox_monitor.h"
 
-struct monitor_fns dropbox_monitor_fns() {
-  struct monitor_fns f;
-  f.init = dropbox_init;
-  f.sleep_time = dropbox_sleep_time;
-  f.update_text = dropbox_update_text;
-  f.free = dropbox_free;
-
-  return f;
-}
-
-void* dropbox_init(GString* bar_text, GMutex* mutex, GKeyFile* configs) {
+void* dropbox_init(GKeyFile* configs) {
   struct dropbox_monitor* m = malloc(sizeof(struct dropbox_monitor));
 
-  m->bar_text = bar_text;
-  m->mutex = mutex;
+  m->base = base_monitor_init(dropbox_sleep_time, dropbox_update_text, dropbox_free);
 
   setup_sockaddr(&m->remote, &m->addr_len);
   m->status_req = "get_dropbox_status\ndone\n";
@@ -86,9 +76,9 @@ gboolean dropbox_update_text(void* ptr) {
     }
   }
 
-  g_mutex_lock(m->mutex);
-  m->bar_text = g_string_assign(m->bar_text, output);
-  g_mutex_unlock(m->mutex);
+  g_mutex_lock(m->base->mutex);
+  m->base->text = g_string_assign(m->base->text, output);
+  g_mutex_unlock(m->base->mutex);
 
   return TRUE;
 }
@@ -108,6 +98,9 @@ void dropbox_free(void* ptr) {
   }
 
   g_string_free(m->response, TRUE);
+
+  base_monitor_free(m->base);
+
   free(m);
 }
 

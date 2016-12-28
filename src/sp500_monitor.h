@@ -8,10 +8,10 @@
 #include <curl/curl.h>
 
 #include "status_bar.h"
+#include "base_monitor.h"
 
 struct sp500_monitor {
-  GString* bar_text;
-  GMutex* mutex;
+  struct base_monitor* base;
 
   GString* request_str;
   char* err;
@@ -20,8 +20,7 @@ struct sp500_monitor {
   CURL* curl;
 };
 
-struct monitor_fns sp500_monitor_fns();
-void* sp500_init(GString*, GMutex*, GKeyFile*);
+void* sp500_init(GKeyFile*);
 gboolean sp500_update_text(void*);
 int sp500_sleep_time(void*);
 void sp500_free(void*);

@@ -9,6 +9,6 @@
 
 void fail_on_error(GError*);
 void load_configs(GKeyFile*);
-void init_monitors(GKeyFile*, GArray**);
+void init_monitors(GKeyFile*, gsize*, void***);
 void build_display_cmd_str(GKeyFile*, GString*);
-struct monitor_fns convert_string_to_monitor_fns(char*);
+void* convert_string_to_monitor(char*, GKeyFile*);

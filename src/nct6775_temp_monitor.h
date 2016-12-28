@@ -7,7 +7,6 @@
 
 #include "status_bar.h"
 
-struct monitor_fns nct6775_temp_monitor_fns();
-void* nct6775_temp_init(GString*, GMutex*, GKeyFile*);
+void* nct6775_temp_init(GKeyFile*);
 
 int convert_nct6775_temp(int);

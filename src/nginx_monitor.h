@@ -8,10 +8,10 @@
 #include <curl/curl.h>
 
 #include "status_bar.h"
+#include "base_monitor.h"
 
 struct nginx_monitor {
-  GString* bar_text;
-  GMutex* mutex;
+  struct base_monitor* base;
 
   GString* request_str;
   char* err;
@@ -20,8 +20,7 @@ struct nginx_monitor {
   CURL* curl;
 };
 
-struct monitor_fns nginx_monitor_fns();
-void* nginx_init(GString*, GMutex*, GKeyFile*);
+void* nginx_init(GKeyFile*);
 gboolean nginx_update_text(void*);
 int nginx_sleep_time(void*);
 void nginx_free(void*);

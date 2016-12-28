@@ -7,8 +7,8 @@
 #include <glib.h>
 #include <string.h>
 
-#include "status_bar.h"
 #include "configs.h"
+#include "base_monitor.h"
 
 #include "clock_monitor.h"
 #include "thinkpad_temp_monitor.h"
@@ -107,59 +107,57 @@ void build_display_cmd_str(GKeyFile* configs, GString* str) {
   g_free(icon_font_size);
 }
 
-void init_monitors(GKeyFile* configs, GArray** fns) {
+void init_monitors(GKeyFile* configs, gsize* length, void*** monitors) {
   char** monitor_configs;
-  gsize lengths;
   GError* error = NULL;
-  monitor_configs = g_key_file_get_string_list(configs, "configs", "monitors", &lengths, &error);
+  monitor_configs = g_key_file_get_string_list(configs, "configs", "monitors", length, &error);
   fail_on_error(error);
 
-  *fns = g_array_sized_new(FALSE, FALSE, sizeof(struct monitor_fns), lengths);
+  *monitors = malloc((*length)*sizeof(void*));
 
-  int i = 0;
-  for (i = 0; i < lengths; i++) {
-    struct monitor_fns fn = convert_string_to_monitor_fns(monitor_configs[i]);
-    g_array_append_val(*fns, fn);
+  for (int i = 0; i < *length; i++) {
+    void* m = convert_string_to_monitor(monitor_configs[i], configs);
+    (*monitors)[i] = m;
   }
 
   g_strfreev(monitor_configs);
 }
 
-struct monitor_fns convert_string_to_monitor_fns(char* str) {
+void* convert_string_to_monitor(char* str, GKeyFile* configs) {
   if (strcmp("net", str) == 0) {
-    return net_monitor_fns();
+    return net_init(configs);
   } else if (strcmp("clock", str) == 0) {
-    return clock_monitor_fns();
+    return clock_init(configs);
   } else if (strcmp("dropbox", str) == 0) {
-    return dropbox_monitor_fns();
+    return dropbox_init(configs);
   } else if (strcmp("memory", str) == 0) {
-    return memory_monitor_fns();
+    return memory_init(configs);
   } else if (strcmp("sp500", str) == 0) {
-    return sp500_monitor_fns();
+    return sp500_init(configs);
   } else if (strcmp("battery", str) == 0) {
-    return battery_monitor_fns();
+    return battery_init(configs);
   } else if (strcmp("thinkpad_fan", str) == 0) {
-    return thinkpad_fan_monitor_fns();
+    return thinkpad_fan_init(configs);
   } else if (strcmp("thinkpad_temp", str) == 0) {
-    return thinkpad_temp_monitor_fns();
+    return thinkpad_temp_init(configs);
   } else if (strcmp("weather", str) == 0) {
-    return weather_monitor_fns();
+    return weather_init(configs);
   } else if (strcmp("core_temp", str) == 0) {
-    return core_temp_monitor_fns();
+    return core_temp_init(configs);
   } else if (strcmp("it87_temp", str) == 0) {
-    return it87_temp_monitor_fns();
+    return it87_temp_init(configs);
   } else if (strcmp("it87_fan", str) == 0) {
-    return it87_fan_monitor_fns();
+    return it87_fan_init(configs);
   } else if (strcmp("nct6775_temp", str) == 0) {
-    return nct6775_temp_monitor_fns();
+    return nct6775_temp_init(configs);
   } else if (strcmp("nct6775_fan", str) == 0) {
-    return nct6775_fan_monitor_fns();
+    return nct6775_fan_init(configs);
   } else if (strcmp("volume", str) == 0) {
-    return volume_monitor_fns();
+    return volume_init(configs);
   } else if (strcmp("nginx", str) == 0) {
-    return nginx_monitor_fns();
+    return nginx_init(configs);
   } else if (strcmp("cpu_usage", str) == 0) {
-    return cpu_usage_monitor_fns();
+    return cpu_usage_init(configs);
   } else {
     fprintf(stderr, "Monitor %s not found.\n", str);
     exit(EXIT_FAILURE);

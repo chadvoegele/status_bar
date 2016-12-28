@@ -8,16 +8,15 @@
 #include <glib.h>
 
 #include "status_bar.h"
+#include "base_monitor.h"
 
 struct memory_monitor {
-  GString* bar_text;
-  GMutex* mutex;
+  struct base_monitor* base;
 
   GString* str;
 };
 
-struct monitor_fns memory_monitor_fns();
-void* memory_init(GString*, GMutex*, GKeyFile*);
+void* memory_init(GKeyFile*);
 gboolean memory_update_text(void*);
 int memory_sleep_time(void*);
 void memory_free(void*);

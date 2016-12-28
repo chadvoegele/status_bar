@@ -7,7 +7,6 @@
 
 #include "status_bar.h"
 
-struct monitor_fns core_temp_monitor_fns();
-void* core_temp_init(GString*, GMutex*, GKeyFile*);
+void* core_temp_init(GKeyFile*);
 
 int convert_core_temp(int);

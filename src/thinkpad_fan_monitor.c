@@ -9,23 +9,13 @@
 #include <glib.h>
 
 #include "status_bar.h"
+#include "base_monitor.h"
 #include "thinkpad_fan_monitor.h"
 
-struct monitor_fns thinkpad_fan_monitor_fns() {
-  struct monitor_fns f;
-  f.init = thinkpad_fan_init;
-  f.sleep_time = thinkpad_fan_sleep_time;
-  f.update_text = thinkpad_fan_update_text;
-  f.free = thinkpad_fan_free;
-
-  return f;
-}
-
-void* thinkpad_fan_init(GString* bar_text, GMutex* mutex, GKeyFile* configs) {
+void* thinkpad_fan_init(GKeyFile* configs) {
   struct thinkpad_fan_monitor* m = malloc(sizeof(struct thinkpad_fan_monitor));
 
-  m->bar_text = bar_text;
-  m->mutex = mutex;
+  m->base = base_monitor_init(thinkpad_fan_sleep_time, thinkpad_fan_update_text, thinkpad_fan_free);
 
   m->str = g_string_new(NULL);
 
@@ -60,9 +50,9 @@ gboolean thinkpad_fan_update_text(void* ptr) {
   if (fan_file != NULL)
     fclose(fan_file);
 
-  g_mutex_lock(m->mutex);
-  m->bar_text = g_string_assign(m->bar_text, m->str->str);
-  g_mutex_unlock(m->mutex);
+  g_mutex_lock(m->base->mutex);
+  m->base->text = g_string_assign(m->base->text, m->str->str);
+  g_mutex_unlock(m->base->mutex);
 
   return TRUE;
 }
@@ -74,6 +64,8 @@ int thinkpad_fan_sleep_time(void* ptr) {
 void thinkpad_fan_free(void* ptr) {
   struct thinkpad_fan_monitor* m = (struct thinkpad_fan_monitor*)ptr;
   monitor_null_check(m, "thinkpad_fan_monitor", "free");
+
+  base_monitor_free(m->base);
 
   g_string_free(m->str, TRUE);
   free(m);

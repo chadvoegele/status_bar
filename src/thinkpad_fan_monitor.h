@@ -6,16 +6,15 @@
 #pragma once
 
 #include "status_bar.h"
+#include "base_monitor.h"
 
 struct thinkpad_fan_monitor {
-  GString* bar_text;
-  GMutex* mutex;
+  struct base_monitor* base;
 
   GString* str;
 };
 
-struct monitor_fns thinkpad_fan_monitor_fns();
-void* thinkpad_fan_init(GString*, GMutex*, GKeyFile*);
+void* thinkpad_fan_init(GKeyFile*);
 gboolean thinkpad_fan_update_text(void*);
 int thinkpad_fan_sleep_time(void*);
 void thinkpad_fan_free(void*);

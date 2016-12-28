@@ -9,24 +9,14 @@
 
 #include "clock_monitor.h"
 #include "status_bar.h"
+#include "base_monitor.h"
 
 #define MAX_TEXT_LENGTH 100
 
-struct monitor_fns clock_monitor_fns() {
-  struct monitor_fns f;
-  f.init = clock_init;
-  f.sleep_time = clock_sleep_time;
-  f.update_text = clock_update_text;
-  f.free = clock_free;
-
-  return f;
-}
-
-void* clock_init(GString* bar_text, GMutex* mutex, GKeyFile* configs) {
+void* clock_init(GKeyFile* configs) {
   struct clock_monitor* m = malloc(sizeof(struct clock_monitor));
 
-  m->bar_text = bar_text;
-  m->mutex = mutex;
+  m->base = base_monitor_init(clock_sleep_time, clock_update_text, clock_free);
 
   m->colon_on = TRUE;
   m->str = malloc(MAX_TEXT_LENGTH*sizeof(char));
@@ -52,9 +42,9 @@ gboolean clock_update_text(void* ptr) {
   m->colon_on = !m->colon_on;
   strftime(m->str, MAX_TEXT_LENGTH, format_str, &timeinfo);
 
-  g_mutex_lock(m->mutex);
-  m->bar_text = g_string_assign(m->bar_text, m->str);
-  g_mutex_unlock(m->mutex);
+  g_mutex_lock(m->base->mutex);
+  m->base->text = g_string_assign(m->base->text, m->str);
+  g_mutex_unlock(m->base->mutex);
 
   return TRUE;
 }
@@ -68,5 +58,8 @@ void clock_free(void* ptr) {
   monitor_null_check(m, "clock_monitor", "free");
 
   free(m->str);
+
+  base_monitor_free(m->base);
+
   free(m);
 }

@@ -12,21 +12,10 @@
 #include "sp500_monitor.h"
 #include "http_download.h"
 
-struct monitor_fns sp500_monitor_fns() {
-  struct monitor_fns f;
-  f.init = sp500_init;
-  f.sleep_time = sp500_sleep_time;
-  f.update_text = sp500_update_text;
-  f.free = sp500_free;
-
-  return f;
-}
-
-void* sp500_init(GString* bar_text, GMutex* mutex, GKeyFile* configs) {
+void* sp500_init(GKeyFile* configs) {
   struct sp500_monitor* m = malloc(sizeof(struct sp500_monitor));
 
-  m->bar_text = bar_text;
-  m->mutex = mutex;
+  m->base = base_monitor_init(sp500_sleep_time, sp500_update_text, sp500_free);
 
   m->request_str = g_string_new(NULL);
   g_string_printf(m->request_str,
@@ -55,9 +44,9 @@ gboolean sp500_update_text(void* ptr) {
     output = m->err;
   }
 
-  g_mutex_lock(m->mutex);
-  m->bar_text = g_string_assign(m->bar_text, output);
-  g_mutex_unlock(m->mutex);
+  g_mutex_lock(m->base->mutex);
+  m->base->text = g_string_assign(m->base->text, output);
+  g_mutex_unlock(m->base->mutex);
 
   return TRUE;
 }
@@ -74,6 +63,9 @@ void sp500_free(void* ptr) {
   g_string_free(m->res, TRUE);
   g_string_free(m->request_str, TRUE);
   curl_easy_cleanup(m->curl);
+
+  base_monitor_free(m->base);
+
   free(m);
 }
 

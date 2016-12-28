@@ -9,25 +9,15 @@
 #include <curl/curl.h>
 
 #include "status_bar.h"
+#include "base_monitor.h"
 #include "nginx_monitor.h"
 #include "http_download.h"
 #include "configs.h"
 
-struct monitor_fns nginx_monitor_fns() {
-  struct monitor_fns f;
-  f.init = nginx_init;
-  f.sleep_time = nginx_sleep_time;
-  f.update_text = nginx_update_text;
-  f.free = nginx_free;
-
-  return f;
-}
-
-void* nginx_init(GString* bar_text, GMutex* mutex, GKeyFile* configs) {
+void* nginx_init(GKeyFile* configs) {
   struct nginx_monitor* m = malloc(sizeof(struct nginx_monitor));
 
-  m->bar_text = bar_text;
-  m->mutex = mutex;
+  m->base = base_monitor_init(nginx_sleep_time, nginx_update_text, nginx_free);
 
   GError* error = NULL;
   char* status_uri = g_key_file_get_string(
@@ -61,9 +51,9 @@ gboolean nginx_update_text(void* ptr) {
     output = m->err;
   }
 
-  g_mutex_lock(m->mutex);
-  m->bar_text = g_string_assign(m->bar_text, output);
-  g_mutex_unlock(m->mutex);
+  g_mutex_lock(m->base->mutex);
+  m->base->text = g_string_assign(m->base->text, output);
+  g_mutex_unlock(m->base->mutex);
 
   return TRUE;
 }
@@ -80,6 +70,9 @@ void nginx_free(void* ptr) {
   g_string_free(m->res, TRUE);
   g_string_free(m->request_str, TRUE);
   curl_easy_cleanup(m->curl);
+
+  base_monitor_free(m->base);
+
   free(m);
 }
 

@@ -7,7 +7,6 @@
 
 #include "status_bar.h"
 
-struct monitor_fns it87_fan_monitor_fns();
-void* it87_fan_init(GString*, GMutex*, GKeyFile*);
+void* it87_fan_init(GKeyFile*);
 
 int convert_it87_fan(int);

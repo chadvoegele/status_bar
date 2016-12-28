@@ -10,25 +10,14 @@
 
 #include "memory_monitor.h"
 #include "status_bar.h"
+#include "base_monitor.h"
 
 #define MAX_MEMINFO_LENGTH 100
 
-struct monitor_fns memory_monitor_fns() {
-  struct monitor_fns f;
-  f.init = memory_init;
-  f.sleep_time = memory_sleep_time;
-  f.update_text = memory_update_text;
-  f.free = memory_free;
-
-  return f;
-}
-
-
-void* memory_init(GString* bar_text, GMutex* mutex, GKeyFile* configs) {
+void* memory_init(GKeyFile* configs) {
   struct memory_monitor* m = malloc(sizeof(struct memory_monitor));
 
-  m->bar_text = bar_text;
-  m->mutex = mutex;
+  m->base = base_monitor_init(memory_sleep_time, memory_update_text, memory_free);
 
   m->str = g_string_new(NULL);
 
@@ -68,9 +57,9 @@ gboolean memory_update_text(void* ptr) {
   if (mem_file != NULL)
     fclose(mem_file);
 
-  g_mutex_lock(m->mutex);
-  m->bar_text = g_string_assign(m->bar_text, m->str->str);
-  g_mutex_unlock(m->mutex);
+  g_mutex_lock(m->base->mutex);
+  m->base->text = g_string_assign(m->base->text, m->str->str);
+  g_mutex_unlock(m->base->mutex);
 
   return TRUE;
 }
@@ -82,6 +71,8 @@ int memory_sleep_time(void* ptr) {
 void memory_free(void* ptr) {
   struct memory_monitor* m = (struct memory_monitor*)ptr;
   monitor_null_check(m, "memory_monitor", "free");
+
+  base_monitor_free(m->base);
 
   g_string_free(m->str, TRUE);
   free(m);

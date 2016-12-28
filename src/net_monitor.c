@@ -10,22 +10,12 @@
 
 #include "net_monitor.h"
 #include "status_bar.h"
+#include "base_monitor.h"
 
-struct monitor_fns net_monitor_fns() {
-  struct monitor_fns f;
-  f.init = net_init;
-  f.sleep_time = net_sleep_time;
-  f.update_text = net_update_text;
-  f.free = net_free;
-
-  return f;
-}
-
-void* net_init(GString* bar_text, GMutex* mutex, GKeyFile* configs) {
+void* net_init(GKeyFile* configs) {
   struct net_monitor* m = malloc(sizeof(struct net_monitor));
 
-  m->bar_text = bar_text;
-  m->mutex = mutex;
+  m->base = base_monitor_init(net_sleep_time, net_update_text, net_free);
 
   m->str = g_string_new(NULL);
 
@@ -55,9 +45,9 @@ gboolean net_update_text(void* ptr) {
 
   g_string_printf(m->str, "%d%d", tx_speed, rx_speed);
 
-  g_mutex_lock(m->mutex);
-  m->bar_text = g_string_assign(m->bar_text, m->str->str);
-  g_mutex_unlock(m->mutex);
+  g_mutex_lock(m->base->mutex);
+  m->base->text = g_string_assign(m->base->text, m->str->str);
+  g_mutex_unlock(m->base->mutex);
 
   return TRUE;
 }
@@ -69,6 +59,8 @@ int net_sleep_time(void* ptr) {
 void net_free(void* ptr) {
   struct net_monitor* m = (struct net_monitor*)ptr;
   monitor_null_check(m, "net_monitor", "free");
+
+  base_monitor_free(m->base);
 
   g_string_free(m->str, TRUE);
 

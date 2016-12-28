@@ -10,23 +10,13 @@
 #include <limits.h>
 
 #include "status_bar.h"
+#include "base_monitor.h"
 #include "thinkpad_temp_monitor.h"
 
-struct monitor_fns thinkpad_temp_monitor_fns() {
-  struct monitor_fns f;
-  f.init = thinkpad_temp_init;
-  f.sleep_time = thinkpad_temp_sleep_time;
-  f.update_text = thinkpad_temp_update_text;
-  f.free = thinkpad_temp_free;
-
-  return f;
-}
-
-void* thinkpad_temp_init(GString* bar_text, GMutex* mutex, GKeyFile* configs) {
+void* thinkpad_temp_init(GKeyFile* configs) {
   struct thinkpad_temp_monitor* m = malloc(sizeof(struct thinkpad_temp_monitor));
 
-  m->bar_text = bar_text;
-  m->mutex = mutex;
+  m->base = base_monitor_init(thinkpad_temp_sleep_time, thinkpad_temp_update_text, thinkpad_temp_free);
 
   m->str = g_string_new(NULL);
 
@@ -77,9 +67,9 @@ gboolean thinkpad_temp_update_text(void* ptr) {
   if (temp_file != NULL)
     fclose(temp_file);
 
-  g_mutex_lock(m->mutex);
-  m->bar_text = g_string_assign(m->bar_text, m->str->str);
-  g_mutex_unlock(m->mutex);
+  g_mutex_lock(m->base->mutex);
+  m->base->text = g_string_assign(m->base->text, m->str->str);
+  g_mutex_unlock(m->base->mutex);
 
   return TRUE;
 }
@@ -91,6 +81,8 @@ int thinkpad_temp_sleep_time(void* ptr) {
 void thinkpad_temp_free(void* ptr) {
   struct thinkpad_temp_monitor* m = (struct thinkpad_temp_monitor*)ptr;
   monitor_null_check(m, "thinkpad_temp_monitor", "free");
+
+  base_monitor_free(m->base);
 
   g_string_free(m->str, TRUE);
   free(m);

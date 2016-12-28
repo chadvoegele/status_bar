@@ -9,22 +9,12 @@
 
 #include "volume_monitor.h"
 #include "status_bar.h"
+#include "base_monitor.h"
 
-struct monitor_fns volume_monitor_fns() {
-  struct monitor_fns f;
-  f.init = volume_init;
-  f.sleep_time = volume_sleep_time;
-  f.update_text = volume_update_text;
-  f.free = volume_free;
-
-  return f;
-}
-
-void* volume_init(GString* bar_text, GMutex* mutex, GKeyFile* configs) {
+void* volume_init(GKeyFile* configs) {
   struct volume_monitor* m = malloc(sizeof(struct volume_monitor));
 
-  m->bar_text = bar_text;
-  m->mutex = mutex;
+  m->base = base_monitor_init(volume_sleep_time, volume_update_text, volume_free);
 
   m->str = g_string_new(NULL);
 
@@ -105,9 +95,9 @@ gboolean volume_update_text(void* ptr) {
       g_string_printf(m->str, "%ld", vol/100);
   }
 
-  g_mutex_lock(m->mutex);
-  m->bar_text = g_string_assign(m->bar_text, m->str->str);
-  g_mutex_unlock(m->mutex);
+  g_mutex_lock(m->base->mutex);
+  m->base->text = g_string_assign(m->base->text, m->str->str);
+  g_mutex_unlock(m->base->mutex);
 
   return TRUE;
 }
@@ -119,6 +109,8 @@ int volume_sleep_time(void* ptr) {
 void volume_free(void* ptr) {
   struct volume_monitor* m = (struct volume_monitor*)ptr;
   monitor_null_check(m, "volume_monitor", "free");
+
+  base_monitor_free(m->base);
 
   g_string_free(m->str, TRUE);
 

@@ -9,10 +9,10 @@
 #include <curl/curl.h>
 
 #include "status_bar.h"
+#include "base_monitor.h"
 
 struct weather_monitor {
-  GString* bar_text;
-  GMutex* mutex;
+  struct base_monitor* base;
 
   GString* res;
   char* err;
@@ -21,8 +21,7 @@ struct weather_monitor {
   CURL* curl;
 };
 
-struct monitor_fns weather_monitor_fns();
-void* weather_init(GString*, GMutex*, GKeyFile*);
+void* weather_init(GKeyFile*);
 gboolean weather_update_text(void*);
 int weather_sleep_time(void*);
 void weather_free(void*);

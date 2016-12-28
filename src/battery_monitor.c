@@ -9,24 +9,14 @@
 #include <glib.h>
 
 #include "status_bar.h"
+#include "base_monitor.h"
 #include "configs.h"
 #include "battery_monitor.h"
 
-struct monitor_fns battery_monitor_fns() {
-  struct monitor_fns f;
-  f.init = battery_init;
-  f.sleep_time = battery_sleep_time;
-  f.update_text = battery_update_text;
-  f.free = battery_free;
-
-  return f;
-}
-
-void* battery_init(GString* bar_text, GMutex* mutex, GKeyFile* configs) {
+void* battery_init(GKeyFile* configs) {
   struct battery_monitor* m = malloc(sizeof(struct battery_monitor));
 
-  m->bar_text = bar_text;
-  m->mutex = mutex;
+  m->base = base_monitor_init(battery_sleep_time, battery_update_text, battery_free);
 
   GError* error = NULL;
   char* alert_fgcolor = g_key_file_get_string(
@@ -110,9 +100,9 @@ gboolean battery_update_text(void* ptr) {
   if (battery_full_file != NULL)
     fclose(battery_full_file);
 
-  g_mutex_lock(m->mutex);
-  m->bar_text = g_string_assign(m->bar_text, m->str->str);
-  g_mutex_unlock(m->mutex);
+  g_mutex_lock(m->base->mutex);
+  m->base->text = g_string_assign(m->base->text, m->str->str);
+  g_mutex_unlock(m->base->mutex);
 
   return TRUE;
 }
@@ -128,5 +118,8 @@ void battery_free(void* ptr) {
   g_string_free(m->str, TRUE);
   g_string_free(m->alert_fgcolor, TRUE);
   g_string_free(m->alert_bgcolor, TRUE);
+
+  base_monitor_free(m->base);
+
   free(m);
 }

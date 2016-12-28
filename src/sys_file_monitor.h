@@ -6,10 +6,10 @@
 #pragma once
 
 #include "status_bar.h"
+#include "base_monitor.h"
 
 struct sys_file_monitor {
-  GString* bar_text;
-  GMutex* mutex;
+  struct base_monitor* base;
 
   gunichar icon;
   GArray* temp_filenames;
@@ -21,6 +21,5 @@ gboolean sys_file_update_text(void*);
 int sys_file_sleep_time(void*);
 void sys_file_free(void*);
 
-void* sys_file_init_config(gunichar, GArray*, int(*convert)(int), GString*,
-    GMutex*, GKeyFile*);
+void* sys_file_init_config(gunichar, GArray*, int(*convert)(int), GKeyFile*);
 void append_filename(GArray*, char*);

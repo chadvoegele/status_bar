@@ -6,10 +6,10 @@
 #pragma once
 
 #include "status_bar.h"
+#include "base_monitor.h"
 
 struct net_monitor {
-  GString* bar_text;
-  GMutex* mutex;
+  struct base_monitor* base;
 
   GArray* rx;
   GArray* tx;
@@ -18,8 +18,7 @@ struct net_monitor {
   GString* str;
 };
 
-struct monitor_fns net_monitor_fns();
-void* net_init(GString*, GMutex*, GKeyFile*);
+void* net_init(GKeyFile*);
 gboolean net_update_text(void*);
 int net_sleep_time(void*);
 void net_free(void*);

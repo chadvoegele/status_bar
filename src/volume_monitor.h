@@ -9,16 +9,15 @@
 #include <alsa/asoundlib.h>
 
 #include "status_bar.h"
+#include "base_monitor.h"
 
 struct volume_monitor {
-  GString* bar_text;
-  GMutex* mutex;
+  struct base_monitor* base;
 
   GString* str;
 };
 
-struct monitor_fns volume_monitor_fns();
-void* volume_init(GString*, GMutex*, GKeyFile*);
+void* volume_init(GKeyFile*);
 gboolean volume_update_text(void*);
 int volume_sleep_time(void*);
 void volume_free(void*);

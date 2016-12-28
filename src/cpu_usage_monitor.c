@@ -9,25 +9,15 @@
 #include <glib.h>
 
 #include "status_bar.h"
+#include "base_monitor.h"
 #include "cpu_usage_monitor.h"
 
 #define N_TIMES 10
 
-struct monitor_fns cpu_usage_monitor_fns() {
-  struct monitor_fns f;
-  f.init = cpu_usage_init;
-  f.sleep_time = cpu_usage_sleep_time;
-  f.update_text = cpu_usage_update_text;
-  f.free = cpu_usage_free;
-
-  return f;
-}
-
-void* cpu_usage_init(GString* bar_text, GMutex* mutex, GKeyFile* configs) {
+void* cpu_usage_init(GKeyFile* configs) {
   struct cpu_usage_monitor* m = malloc(sizeof(struct cpu_usage_monitor));
 
-  m->bar_text = bar_text;
-  m->mutex = mutex;
+  m->base = base_monitor_init(cpu_usage_sleep_time, cpu_usage_update_text, cpu_usage_free);
 
   m->str = g_string_new(NULL);
   m->last_total = 1U;
@@ -94,9 +84,9 @@ gboolean cpu_usage_update_text(void* ptr) {
     fclose(time_file);
   }
 
-  g_mutex_lock(m->mutex);
-  m->bar_text = g_string_assign(m->bar_text, m->str->str);
-  g_mutex_unlock(m->mutex);
+  g_mutex_lock(m->base->mutex);
+  m->base->text = g_string_assign(m->base->text, m->str->str);
+  g_mutex_unlock(m->base->mutex);
 
   return TRUE;
 }
@@ -108,6 +98,8 @@ int cpu_usage_sleep_time(void* ptr) {
 void cpu_usage_free(void* ptr) {
   struct cpu_usage_monitor* m = (struct cpu_usage_monitor*)ptr;
   monitor_null_check(m, "cpu_usage_monitor", "free");
+
+  base_monitor_free(m->base);
 
   g_string_free(m->str, TRUE);
   free(m);

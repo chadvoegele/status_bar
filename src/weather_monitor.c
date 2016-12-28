@@ -11,23 +11,13 @@
 #include "weather_monitor.h"
 #include "http_download.h"
 #include "status_bar.h"
+#include "base_monitor.h"
 #include "configs.h"
 
-struct monitor_fns weather_monitor_fns() {
-  struct monitor_fns f;
-  f.init = weather_init;
-  f.sleep_time = weather_sleep_time;
-  f.update_text = weather_update_text;
-  f.free = weather_free;
-
-  return f;
-}
-
-void* weather_init(GString* bar_text, GMutex* mutex, GKeyFile* configs) {
+void* weather_init(GKeyFile* configs) {
   struct weather_monitor* m = malloc(sizeof(struct weather_monitor));
 
-  m->bar_text = bar_text;
-  m->mutex = mutex;
+  m->base = base_monitor_init(weather_sleep_time, weather_update_text, weather_free);
 
   GError* error = NULL;
   char* weather_loc = g_key_file_get_string(
@@ -63,9 +53,9 @@ gboolean weather_update_text(void* ptr) {
     output = m->err;
   }
 
-  g_mutex_lock(m->mutex);
-  m->bar_text = g_string_assign(m->bar_text, output);
-  g_mutex_unlock(m->mutex);
+  g_mutex_lock(m->base->mutex);
+  m->base->text = g_string_assign(m->base->text, output);
+  g_mutex_unlock(m->base->mutex);
 
   return TRUE;
 }
@@ -82,6 +72,8 @@ void weather_free(void* ptr) {
   g_string_free(m->res, TRUE);
   g_string_free(m->request_str, TRUE);
   curl_easy_cleanup(m->curl);
+
+  base_monitor_free(m->base);
 
   free(m);
 }

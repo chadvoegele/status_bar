@@ -5,19 +5,17 @@
 
 #pragma once
 
-#include "status_bar.h"
+#include "base_monitor.h"
 
 struct cpu_usage_monitor {
-  GString* bar_text;
-  GMutex* mutex;
+  struct base_monitor* base;
 
   GString* str;
   unsigned int last_total;
   unsigned int last_idle;
 };
 
-struct monitor_fns cpu_usage_monitor_fns();
-void* cpu_usage_init(GString*, GMutex*, GKeyFile*);
+void* cpu_usage_init(GKeyFile*);
 gboolean cpu_usage_update_text(void*);
 int cpu_usage_sleep_time(void*);
 void cpu_usage_free(void*);

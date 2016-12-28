@@ -5,11 +5,12 @@
 
 #pragma once
 
-#include "status_bar.h"
+#include <glib.h>
+#include "base_monitor.h"
 
 struct battery_monitor {
-  GString* bar_text;
-  GMutex* mutex;
+  struct base_monitor* base;
+
   GString* alert_fgcolor;
   GString* alert_bgcolor;
 
@@ -18,8 +19,7 @@ struct battery_monitor {
   GString* battery_now_path_str;
 };
 
-struct monitor_fns battery_monitor_fns();
-void* battery_init(GString*, GMutex*, GKeyFile*);
+void* battery_init(GKeyFile*);
 gboolean battery_update_text(void*);
 int battery_sleep_time(void*);
 void battery_free(void*);

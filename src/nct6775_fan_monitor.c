@@ -11,22 +11,11 @@
 #include "nct6775_fan_monitor.h"
 #include "sys_file_monitor.h"
 
-struct monitor_fns nct6775_fan_monitor_fns() {
-  struct monitor_fns f;
-  f.init = nct6775_fan_init;
-  f.sleep_time = sys_file_sleep_time;
-  f.update_text = sys_file_update_text;
-  f.free = sys_file_free;
-
-  return f;
-}
-
 int convert_nct6775_fan(int temp) {
   return temp;
 }
 
-void* nct6775_fan_init(GString* bar_text, GMutex* mutex,
-    GKeyFile* configs) {
+void* nct6775_fan_init(GKeyFile* configs) {
   GArray* temp_filenames = g_array_new(FALSE, FALSE, sizeof(GString*));
   append_filename(temp_filenames,
       "/sys/devices/platform/nct6775.2576/hwmon/hwmon1/fan2_input");
@@ -37,6 +26,5 @@ void* nct6775_fan_init(GString* bar_text, GMutex* mutex,
 
   gunichar icon;
   sscanf("U+62384", "U+%06"G_GINT32_FORMAT"X", &icon);
-  return sys_file_init_config(icon, temp_filenames, convert_nct6775_fan,
-      bar_text, mutex, configs);
+  return sys_file_init_config(icon, temp_filenames, convert_nct6775_fan, configs);
 }
