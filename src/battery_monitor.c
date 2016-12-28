@@ -118,6 +118,8 @@ void battery_free(void* ptr) {
   g_string_free(m->str, TRUE);
   g_string_free(m->alert_fgcolor, TRUE);
   g_string_free(m->alert_bgcolor, TRUE);
+  g_string_free(m->battery_full_path_str, TRUE);
+  g_string_free(m->battery_now_path_str, TRUE);
 
   base_monitor_free(m->base);
 
