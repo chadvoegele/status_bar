@@ -37,8 +37,8 @@ gboolean net_update_text(void* ptr) {
   int this_rx = total_bytes(m->rx);
   int this_tx = total_bytes(m->tx);
 
-  int rx_speed = (this_rx - m->last_rx)*8/1000;
-  int tx_speed = (this_tx - m->last_tx)*8/1000;
+  int rx_speed = (this_rx - m->last_rx)/1024;
+  int tx_speed = (this_tx - m->last_tx)/1024;
 
   m->last_rx = this_rx;
   m->last_tx = this_tx;
