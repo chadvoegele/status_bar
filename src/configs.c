@@ -74,11 +74,8 @@ void build_display_cmd_str(GKeyFile* configs, GString* str) {
   char* height = g_key_file_get_string(configs, "configs", "height", &error);
 
   error = NULL;
-  char* font_size = g_key_file_get_string(configs, "configs", "font_size", &error);
-  fail_on_error(error);
-
-  error = NULL;
-  char* icon_font_size = g_key_file_get_string(configs, "configs", "icon_font_size", &error);
+  gsize font_length;
+  char** fonts = g_key_file_get_string_list(configs, "configs", "fonts", &font_length, &error);
   fail_on_error(error);
 
   str = g_string_truncate(str, 0);
@@ -94,17 +91,15 @@ void build_display_cmd_str(GKeyFile* configs, GString* str) {
     g_string_append_printf(str, "%s", height);
   }
   g_string_append_printf(str, "+0+0\"");
-  g_string_append_printf(str, " -f \"-*-terminus-medium-*-*-*-%s-*-*-*-*-*-*-*\"",
-      font_size);
-  g_string_append_printf(str, " -f \"-*-ionicons-medium-*-*-*-%s-*-*-*-*-*-*-*\"",
-      icon_font_size);
+  for (gsize i = 0; i < font_length; i++) {
+    g_string_append_printf(str, " -f \"%s\"", fonts[i]);
+  }
 
   g_free(fg_color);
   g_free(bg_color);
   g_free(width);
   g_free(height);
-  g_free(font_size);
-  g_free(icon_font_size);
+  g_strfreev(fonts);
 }
 
 void init_monitors(GKeyFile* configs, gsize* length, void*** monitors) {
