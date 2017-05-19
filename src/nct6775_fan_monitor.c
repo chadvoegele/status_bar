@@ -22,7 +22,7 @@ void* nct6775_fan_init(GKeyFile* configs) {
   append_filename(temp_filenames,
       "/sys/devices/platform/nct6775.2576/hwmon/hwmon1/fan3_input");
   append_filename(temp_filenames,
-      "/sys/devices/platform/nct6775.2576/hwmon/hwmon1/fan5_input");
+      "/sys/devices/platform/nct6775.2576/hwmon/hwmon1/fan4_input");
 
   gunichar icon;
   sscanf("U+62384", "U+%06"G_GINT32_FORMAT"X", &icon);
