@@ -18,20 +18,20 @@
 #include "configs.h"
 
 int main(int argc, char** argv) {
-  return status_bar();
+  return status_bar(argc, argv);
 }
 
-int status_bar() {
+int status_bar(int argc, char** argv) {
   struct status_bar status_bar;
-  init_status_bar(&status_bar);
+  init_status_bar(&status_bar, argc, argv);
   run_status_bar(&status_bar);
   close_status_bar(&status_bar);
   return EXIT_SUCCESS;
 }
 
-void init_status_bar(struct status_bar* status_bar) {
+void init_status_bar(struct status_bar* status_bar, int argc, char** argv) {
   status_bar->configs = g_key_file_new();
-  load_configs(status_bar->configs);
+  load_configs(status_bar->configs, argc, argv);
 
   GString* display_cmd_str = g_string_new(NULL);
   build_display_cmd_str(status_bar->configs, display_cmd_str);

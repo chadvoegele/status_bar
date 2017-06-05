@@ -6,6 +6,7 @@
 #include <stdlib.h>
 #include <glib.h>
 #include <string.h>
+#include <argp.h>
 
 #include "configs.h"
 #include "base_monitor.h"
@@ -28,16 +29,41 @@
 #include "nginx_monitor.h"
 #include "cpu_usage_monitor.h"
 
-void load_configs(GKeyFile* configs) {
-  GString* config_path = g_string_new(NULL);
-  char* path, *home;
+error_t parse_opt(int key, char *arg, struct argp_state *state) {
+  char** config_file_ptr = (char**)state->input;
+  switch (key) {
+    case 'c': *config_file_ptr = arg; break;
+    default: return ARGP_ERR_UNKNOWN;
+  }
+  return 0;
+}
 
-  if ((path = getenv("XDG_CONFIG_HOME")) != NULL) {
+void parse_arguments(int argc, char** argv, char** config_file) {
+  static char doc[] = "";
+  static char args_doc[] = "";
+  struct argp_option options[] = {
+    {"config",  'c', "status_bar.conf",   0,  "location of config file" },
+    {0},
+  };
+  struct argp argp = { options, parse_opt, args_doc, doc };
+  argp_parse(&argp, argc, argv, 0, 0, config_file);
+}
+
+void load_configs(GKeyFile* configs, int argc, char** argv) {
+  GString* config_path = g_string_new(NULL);
+
+  char* config_file_arg = NULL;
+  char* path = NULL;
+  char* home = NULL;
+  parse_arguments(argc, argv, &config_file_arg);
+  if (config_file_arg != NULL) {
+    g_string_printf(config_path, "%s", config_file_arg);
+  } else if ((path = getenv("XDG_CONFIG_HOME")) != NULL) {
     g_string_printf(config_path, "%s/status_bar.conf", path);
   } else if ((home = getenv("HOME")) != NULL) {
     g_string_printf(config_path, "%s/.config/status_bar.conf", home);
   } else {
-    fprintf(stderr, "Either XDG_CONFIG_HOME or HOME must defined for config file.\n");
+    fprintf(stderr, "Either --config, XDG_CONFIG_HOME, or HOME must defined for config file.\n");
     exit(EXIT_FAILURE);
   }
 

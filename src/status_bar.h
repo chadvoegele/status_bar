@@ -19,8 +19,8 @@ struct status_bar {
   GMainLoop* loop;
 };
 
-int status_bar();
-void init_status_bar(struct status_bar*);
+int status_bar(int argc, char** argv);
+void init_status_bar(struct status_bar*, int argc, char** argv);
 void run_status_bar(struct status_bar*);
 gboolean update_status_bar(void*);
 void close_status_bar(struct status_bar*);
