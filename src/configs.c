@@ -6,7 +6,6 @@
 #include <stdlib.h>
 #include <glib.h>
 #include <string.h>
-#include <argp.h>
 
 #include "configs.h"
 #include "base_monitor.h"

@@ -6,6 +6,7 @@
 #pragma once
 
 #include <glib.h>
+#include <argp.h>
 
 void parse_arguments(int argc, char** argv, char** config_file);
 error_t parse_opt(int key, char *arg, struct argp_state *state);
