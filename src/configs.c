@@ -27,6 +27,7 @@
 #include "volume_monitor.h"
 #include "nginx_monitor.h"
 #include "cpu_usage_monitor.h"
+#include "users_monitor.h"
 
 error_t parse_opt(int key, char *arg, struct argp_state *state) {
   char** config_file_ptr = (char**)state->input;
@@ -178,6 +179,8 @@ void* convert_string_to_monitor(char* str, GKeyFile* configs) {
     return nginx_init(configs);
   } else if (strcmp("cpu_usage", str) == 0) {
     return cpu_usage_init(configs);
+  } else if (strcmp("users", str) == 0) {
+    return users_init(configs);
   } else {
     fprintf(stderr, "Monitor %s not found.\n", str);
     exit(EXIT_FAILURE);
