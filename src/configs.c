@@ -76,6 +76,13 @@ void load_configs(GKeyFile* configs, int argc, char** argv) {
   g_string_free(config_path, TRUE);
 }
 
+void warn_on_error(GError* error) {
+  if (error != NULL) {
+    fprintf(stderr, "%s\n", error->message);
+    g_error_free(error);
+  }
+}
+
 void fail_on_error(GError* error) {
   if (error != NULL) {
     fprintf(stderr, "%s\n", error->message);
@@ -95,9 +102,11 @@ void build_display_cmd_str(GKeyFile* configs, GString* str) {
 
   error = NULL;
   char* width = g_key_file_get_string(configs, "configs", "width", &error);
+  warn_on_error(error);
 
   error = NULL;
   char* height = g_key_file_get_string(configs, "configs", "height", &error);
+  warn_on_error(error);
 
   error = NULL;
   gsize font_length;
