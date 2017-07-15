@@ -113,10 +113,9 @@ int total_bytes(GArray* arr) {
     char* file = g_array_index(arr, GString*, i)->str;
     fps = fopen(file, "r");
 
-    if (fps != NULL)
-      fscanf(fps, "%d", &bytes);
-    else
+    if (fps == NULL || fscanf(fps, "%d", &bytes) != 1) {
       bytes = 0;
+    }
 
     total_bytes = total_bytes + bytes;
 

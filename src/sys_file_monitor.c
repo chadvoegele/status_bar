@@ -45,14 +45,17 @@ gboolean sys_file_update_text(void* ptr) {
     FILE* temp_file = fopen(temp_file_path, "r");
     if (temp_file == NULL) {
       fprintf(stderr, "Can't open temp file %s!\n", temp_file_path);
-    } else {
-      int temp;
-      fscanf(temp_file, "%d", &temp);
+      continue;
+    }
+
+    int temp;
+    if (fscanf(temp_file, "%d", &temp) == 1) {
       min_temp = temp < min_temp ? temp : min_temp;
       max_temp = temp > max_temp ? temp : max_temp;
       n_read++;
-      fclose(temp_file);
     }
+
+    fclose(temp_file);
   }
 
   m->str = g_string_set_size(m->str, 0);
