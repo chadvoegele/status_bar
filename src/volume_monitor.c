@@ -110,6 +110,8 @@ void volume_free(void* ptr) {
   struct volume_monitor* m = (struct volume_monitor*)ptr;
   monitor_null_check(m, "volume_monitor", "free");
 
+  snd_config_update_free_global();
+
   base_monitor_free(m->base);
 
   g_string_free(m->str, TRUE);
