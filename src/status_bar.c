@@ -78,7 +78,7 @@ gboolean update_status_bar(void* ptr) {
   }
 
   GString* output = g_string_new(NULL);
-  for (int i = 0; i < status_bar->n_monitors-1; i++) {
+  for (int i = 0; i < status_bar->n_monitors; i++) {
     void* m = status_bar->monitors[i];
     struct base_monitor* bm = ((struct base_monitor_base*)m)->base;
 
@@ -90,12 +90,6 @@ gboolean update_status_bar(void* ptr) {
     g_string_append_printf(output, "%s", bm->text->str);
     g_mutex_unlock(bm->mutex);
   }
-
-  void* m = status_bar->monitors[status_bar->n_monitors-1];
-  struct base_monitor* bm = ((struct base_monitor_base*)m)->base;
-  g_mutex_lock(bm->mutex);
-  g_string_append_printf(output, "%%{r}%s", bm->text->str);
-  g_mutex_unlock(bm->mutex);
 
   fprintf(status_bar->display_pipe, "%s\n", output->str);
   fflush(status_bar->display_pipe);
