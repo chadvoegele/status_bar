@@ -77,13 +77,6 @@ void load_configs(GKeyFile* configs, int argc, char** argv) {
   g_string_free(config_path, TRUE);
 }
 
-void warn_on_error(GError* error) {
-  if (error != NULL) {
-    fprintf(stderr, "%s\n", error->message);
-    g_error_free(error);
-  }
-}
-
 void fail_on_error(GError* error) {
   if (error != NULL) {
     fprintf(stderr, "%s\n", error->message);
@@ -94,48 +87,13 @@ void fail_on_error(GError* error) {
 
 void build_display_cmd_str(GKeyFile* configs, GString* str) {
   GError* error = NULL;
-  char* fg_color = g_key_file_get_string(configs, "configs", "fgcolor", &error);
-  fail_on_error(error);
-
-  error = NULL;
-  char* bg_color = g_key_file_get_string(configs, "configs", "bgcolor", &error);
-  fail_on_error(error);
-
-  error = NULL;
-  char* width = g_key_file_get_string(configs, "configs", "width", &error);
-  warn_on_error(error);
-
-  error = NULL;
-  char* height = g_key_file_get_string(configs, "configs", "height", &error);
-  warn_on_error(error);
-
-  error = NULL;
-  gsize font_length;
-  char** fonts = g_key_file_get_string_list(configs, "configs", "fonts", &font_length, &error);
+  char* pipeto = g_key_file_get_string(configs, "configs", "pipeto", &error);
   fail_on_error(error);
 
   str = g_string_truncate(str, 0);
-  g_string_append_printf(str, "lemonbar");
-  g_string_append_printf(str, " -F \\%s", fg_color);
-  g_string_append_printf(str, " -B \\%s", bg_color);
-  g_string_append_printf(str, " -g \"");
-  if (width) {
-    g_string_append_printf(str, "%s", width);
-  }
-  g_string_append_printf(str, "x");
-  if (height) {
-    g_string_append_printf(str, "%s", height);
-  }
-  g_string_append_printf(str, "+0+0\"");
-  for (gsize i = 0; i < font_length; i++) {
-    g_string_append_printf(str, " -f \"%s\"", fonts[i]);
-  }
+  g_string_append_printf(str, "%s", pipeto);
 
-  g_free(fg_color);
-  g_free(bg_color);
-  g_free(width);
-  g_free(height);
-  g_strfreev(fonts);
+  g_free(pipeto);
 }
 
 void init_monitors(GKeyFile* configs, gsize* length, void*** monitors) {

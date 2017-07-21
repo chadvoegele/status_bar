@@ -11,7 +11,6 @@
 void parse_arguments(int argc, char** argv, char** config_file);
 error_t parse_opt(int key, char *arg, struct argp_state *state);
 void fail_on_error(GError*);
-void warn_on_error(GError*);
 void load_configs(GKeyFile*, int argc, char** argv);
 void init_monitors(GKeyFile*, gsize*, void***);
 void build_display_cmd_str(GKeyFile*, GString*);
