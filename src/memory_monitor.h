@@ -13,6 +13,7 @@
 struct memory_monitor {
   struct base_monitor* base;
 
+  GString* icon;
   GString* str;
 };
 

@@ -18,6 +18,8 @@ void* sys_file_init_config(GArray* temp_filenames,
 
   m->base = base_monitor_init(sys_file_sleep_time, sys_file_update_text, sys_file_free);
 
+  char* icon = g_array_index(arguments, GString*, 0)->str;
+  m->icon = g_string_new(icon);
   m->temp_filenames = temp_filenames;
   m->convert = convert;
   m->str = g_string_new(NULL);
@@ -60,9 +62,9 @@ gboolean sys_file_update_text(void* ptr) {
   m->str = g_string_set_size(m->str, 0);
   if (n_read == n_temps) {
     if (n_temps == 1) {
-      g_string_append_printf(m->str, "%d", m->convert(min_temp));
+      g_string_append_printf(m->str, "%s%d", m->icon->str, m->convert(min_temp));
     } else {
-      g_string_append_printf(m->str, "%d%d", m->convert(min_temp), m->convert(max_temp));
+      g_string_append_printf(m->str, "%s%d%d", m->icon->str, m->convert(min_temp), m->convert(max_temp));
     }
 
   } else {
@@ -84,6 +86,7 @@ void sys_file_free(void* ptr) {
   struct sys_file_monitor* m = (struct sys_file_monitor*)ptr;
   monitor_null_check(m, "sys_file_monitor", "free");
 
+  g_string_free(m->icon, TRUE);
   for (int i = 0; i < m->temp_filenames->len; i++) {
     g_string_free(g_array_index(m->temp_filenames, GString*, i), TRUE);
   }

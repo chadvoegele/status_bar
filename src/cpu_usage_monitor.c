@@ -14,10 +14,14 @@
 
 #define N_TIMES 10
 
+// cpu_usage_init(icon)
 void* cpu_usage_init(GArray* arguments) {
   struct cpu_usage_monitor* m = malloc(sizeof(struct cpu_usage_monitor));
 
   m->base = base_monitor_init(cpu_usage_sleep_time, cpu_usage_update_text, cpu_usage_free);
+
+  char* icon = g_array_index(arguments, GString*, 0)->str;
+  m->icon = g_string_new(icon);
 
   m->str = g_string_new(NULL);
   m->last_total = 1U;
@@ -71,10 +75,10 @@ gboolean cpu_usage_update_text(void* ptr) {
   m->str = g_string_set_size(m->str, 0);
 
   if (n_read == N_TIMES) {
-    g_string_append_printf(m->str, "%d%%", (int)(100*usage_pct));
+    g_string_append_printf(m->str, "%s%d%%", m->icon->str, (int)(100*usage_pct));
 
   } else {
-    g_string_append_printf(m->str, "!");
+    g_string_append_printf(m->str, "%s!", m->icon->str);
   }
 
   if (time_file != NULL) {
@@ -98,6 +102,7 @@ void cpu_usage_free(void* ptr) {
 
   base_monitor_free(m->base);
 
+  g_string_free(m->icon, TRUE);
   g_string_free(m->str, TRUE);
   free(m);
 }

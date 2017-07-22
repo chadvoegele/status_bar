@@ -14,13 +14,16 @@
 #include "base_monitor.h"
 #include "configs.h"
 
-// weather_init(weather_loc)
+// weather_init(icon, weather_loc)
 void* weather_init(GArray* arguments) {
   struct weather_monitor* m = malloc(sizeof(struct weather_monitor));
 
   m->base = base_monitor_init(weather_sleep_time, weather_update_text, weather_free);
 
-  char* weather_loc = g_array_index(arguments, GString*, 0)->str;
+  char* icon = g_array_index(arguments, GString*, 0)->str;
+  m->icon = g_string_new(icon);
+
+  char* weather_loc = g_array_index(arguments, GString*, 1)->str;
 
   m->request_str = g_string_new(NULL);
   g_string_printf(m->request_str, "http://w1.weather.gov/xml/current_obs/%s.xml", weather_loc);
@@ -28,8 +31,8 @@ void* weather_init(GArray* arguments) {
   m->res = g_string_new(NULL);
   m->curl = curl_easy_init();
 
-  m->err = malloc(2*sizeof(char));
-  sprintf(m->err, "!");
+  m->err = malloc((strlen(m->icon->str) + 2)*sizeof(char));
+  sprintf(m->err, "%s!", m->icon->str);
 
   return m;
 }
@@ -42,7 +45,7 @@ gboolean weather_update_text(void* ptr) {
 
   CURLcode code = download_data(m->curl, m->request_str->str, m->res);
 
-  if (code == CURLE_OK && format_output(m->res) != -1) {
+  if (code == CURLE_OK && format_output(m->res, m->icon) != -1) {
     output = m->res->str;
   } else {
     output = m->err;
@@ -68,12 +71,14 @@ void weather_free(void* ptr) {
   g_string_free(m->request_str, TRUE);
   curl_easy_cleanup(m->curl);
 
+  g_string_free(m->icon, TRUE);
+
   base_monitor_free(m->base);
 
   free(m);
 }
 
-int format_output(GString* res) {
+int format_output(GString* res, GString* icon) {
   int code = -1;
   int weather_code = -1;
   int temp_code = -1;
@@ -102,6 +107,7 @@ int format_output(GString* res) {
   if (temp_str != NULL && weather_str != NULL
       && temp_code == 0 && weather_code == 0) {
     res = g_string_truncate(res, 0);
+    res = g_string_append(res, icon->str);
     res = g_string_append(res, temp_str);
     res = g_string_append(res, ", ");
     res = g_string_append(res, weather_str);

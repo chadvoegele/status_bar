@@ -12,10 +12,17 @@
 #include "status_bar.h"
 #include "base_monitor.h"
 
+// net_init(tx_icon, rx_icon)
 void* net_init(GArray* arguments) {
   struct net_monitor* m = malloc(sizeof(struct net_monitor));
 
   m->base = base_monitor_init(net_sleep_time, net_update_text, net_free);
+
+  char* tx_icon = g_array_index(arguments, GString*, 0)->str;
+  m->tx_icon = g_string_new(tx_icon);
+
+  char* rx_icon = g_array_index(arguments, GString*, 1)->str;
+  m->rx_icon = g_string_new(rx_icon);
 
   m->str = g_string_new(NULL);
 
@@ -43,7 +50,7 @@ gboolean net_update_text(void* ptr) {
   m->last_rx = this_rx;
   m->last_tx = this_tx;
 
-  g_string_printf(m->str, "%d/%d", tx_speed, rx_speed);
+  g_string_printf(m->str, "%s%d%s%d", m->tx_icon->str, tx_speed, m->rx_icon->str, rx_speed);
 
   g_mutex_lock(m->base->mutex);
   m->base->text = g_string_assign(m->base->text, m->str->str);
@@ -61,6 +68,9 @@ void net_free(void* ptr) {
   monitor_null_check(m, "net_monitor", "free");
 
   base_monitor_free(m->base);
+
+  g_string_free(m->tx_icon, TRUE);
+  g_string_free(m->rx_icon, TRUE);
 
   g_string_free(m->str, TRUE);
 

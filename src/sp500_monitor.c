@@ -12,10 +12,14 @@
 #include "sp500_monitor.h"
 #include "http_download.h"
 
+// sp500_init(icon)
 void* sp500_init(GArray* arguments) {
   struct sp500_monitor* m = malloc(sizeof(struct sp500_monitor));
 
   m->base = base_monitor_init(sp500_sleep_time, sp500_update_text, sp500_free);
+
+  char* icon = g_array_index(arguments, GString*, 0)->str;
+  m->icon = g_string_new(icon);
 
   m->request_str = g_string_new(NULL);
   g_string_printf(m->request_str,
@@ -24,8 +28,8 @@ void* sp500_init(GArray* arguments) {
   m->res = g_string_new(NULL);
   m->curl = curl_easy_init();
 
-  m->err = malloc(2*sizeof(char));
-  sprintf(m->err, "!");
+  m->err = malloc((strlen(m->icon->str) + 2)*sizeof(char));
+  sprintf(m->err, "%s!", m->icon->str);
 
   return m;
 }
@@ -37,7 +41,7 @@ gboolean sp500_update_text(void* ptr) {
   CURLcode code = download_data(m->curl, m->request_str->str, m->res);
   char* output;
 
-  if (code == CURLE_OK && format_price(m->res) != -1) {
+  if (code == CURLE_OK && format_price(m->res, m->icon) != -1) {
     output = m->res->str;
   } else {
     output = m->err;
@@ -58,6 +62,8 @@ void sp500_free(void* ptr) {
   struct sp500_monitor* m = (struct sp500_monitor*)ptr;
   monitor_null_check(m, "sp500_monitor", "free");
 
+  g_string_free(m->icon, TRUE);
+
   free(m->err);
   g_string_free(m->res, TRUE);
   g_string_free(m->request_str, TRUE);
@@ -68,7 +74,7 @@ void sp500_free(void* ptr) {
   free(m);
 }
 
-int format_price(GString* res) {
+int format_price(GString* res, GString* icon) {
   int code = -1;
 
   char* buf1 = malloc(strlen(res->str)*sizeof(char));
@@ -77,7 +83,7 @@ int format_price(GString* res) {
   int nread = sscanf(res->str, "%[0-9.],%*s - %[+-0-9.]", buf1, buf2);
 
   if (nread == 2) {
-    g_string_printf(res, "%s (%s%%)", buf1, buf2);
+    g_string_printf(res, "%s%s (%s%%)", icon->str, buf1, buf2);
     code = 0;
   }
 

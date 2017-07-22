@@ -11,6 +11,8 @@
 struct users_monitor {
   struct base_monitor* base;
 
+  GString* icon;
+
   GString* str;
 };
 

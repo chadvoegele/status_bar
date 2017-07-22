@@ -17,6 +17,7 @@ struct dropbox_monitor {
   struct sockaddr_un remote;
   int addr_len;
   char* status_req;
+  GString* icon;
   char* err;
   int socket;
   int conn;
@@ -30,5 +31,5 @@ void dropbox_free(void*);
 
 void setup_sockaddr(struct sockaddr_un*, int*);
 int receive(int, GString*);
-void format_response(GString*);
+void format_response(GString*, GString*);
 void format_status(char*);

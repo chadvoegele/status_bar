@@ -11,6 +11,8 @@
 struct battery_monitor {
   struct base_monitor* base;
 
+  GString* battery_full_icon;
+  GString* battery_empty_icon;
   GString* alert_fgcolor;
   GString* alert_bgcolor;
 

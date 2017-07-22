@@ -11,6 +11,8 @@
 struct thinkpad_fan_monitor {
   struct base_monitor* base;
 
+  GString* icon;
+
   GString* str;
 };
 

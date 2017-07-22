@@ -13,10 +13,14 @@
 #include "base_monitor.h"
 #include "thinkpad_temp_monitor.h"
 
+// thinkpad_temp_init(icon)
 void* thinkpad_temp_init(GArray* arguments) {
   struct thinkpad_temp_monitor* m = malloc(sizeof(struct thinkpad_temp_monitor));
 
   m->base = base_monitor_init(thinkpad_temp_sleep_time, thinkpad_temp_update_text, thinkpad_temp_free);
+
+  char* icon = g_array_index(arguments, GString*, 0)->str;
+  m->icon = g_string_new(icon);
 
   m->str = g_string_new(NULL);
 
@@ -57,11 +61,10 @@ gboolean thinkpad_temp_update_text(void* ptr) {
       max_temp = temp > max_temp ? temp : max_temp;
     }
 
-    g_string_printf(m->str, "%d%d",
-        min_temp, max_temp);
+    g_string_printf(m->str, "%s%d%d", m->icon->str, min_temp, max_temp);
 
   } else {
-    g_string_printf(m->str, "!");
+    g_string_printf(m->str, "%s!", m->icon->str);
   }
 
   if (temp_file != NULL)

@@ -13,7 +13,9 @@
 struct nginx_monitor {
   struct base_monitor* base;
 
+  GString* icon;
   GString* request_str;
+
   char* err;
   GString* res;
   CURL* curl;
@@ -24,4 +26,4 @@ gboolean nginx_update_text(void*);
 int nginx_sleep_time(void*);
 void nginx_free(void*);
 
-int format_nginx_status(GString*);
+int format_nginx_status(GString*, GString*);

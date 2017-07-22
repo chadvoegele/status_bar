@@ -10,6 +10,7 @@
 struct cpu_usage_monitor {
   struct base_monitor* base;
 
+  GString* icon;
   GString* str;
   unsigned int last_total;
   unsigned int last_idle;

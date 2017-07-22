@@ -13,22 +13,28 @@
 #include "configs.h"
 #include "battery_monitor.h"
 
-// battery_init(alert_fgcolor, alert_bgcolor, battery_full_path, battery_now_path)
+// battery_init(battery_full_icon, battery_empty_icon, alert_fgcolor, alert_bgcolor, battery_full_path, battery_now_path)
 void* battery_init(GArray* arguments) {
   struct battery_monitor* m = malloc(sizeof(struct battery_monitor));
 
   m->base = base_monitor_init(battery_sleep_time, battery_update_text, battery_free);
 
-  char* alert_fgcolor = g_array_index(arguments, GString*, 0)->str;
+  char* battery_full_icon = g_array_index(arguments, GString*, 0)->str;
+  m->battery_full_icon = g_string_new(battery_full_icon);
+
+  char* battery_empty_icon = g_array_index(arguments, GString*, 1)->str;
+  m->battery_empty_icon = g_string_new(battery_empty_icon);
+
+  char* alert_fgcolor = g_array_index(arguments, GString*, 2)->str;
   m->alert_fgcolor = g_string_new(alert_fgcolor);
 
-  char* alert_bgcolor = g_array_index(arguments, GString*, 1)->str;
+  char* alert_bgcolor = g_array_index(arguments, GString*, 3)->str;
   m->alert_bgcolor = g_string_new(alert_bgcolor);
 
-  char* battery_full_path = g_array_index(arguments, GString*, 2)->str;
+  char* battery_full_path = g_array_index(arguments, GString*, 4)->str;
   m->battery_full_path_str = g_string_new(battery_full_path);
 
-  char* battery_now_path = g_array_index(arguments, GString*, 3)->str;
+  char* battery_now_path = g_array_index(arguments, GString*, 5)->str;
   m->battery_now_path_str = g_string_new(battery_now_path);
 
   m->str = g_string_new(NULL);
@@ -66,13 +72,13 @@ gboolean battery_update_text(void* ptr) {
   if (n_full == 1 && n_now == 1) {
     int battpct = (int)(100.0*now/full);
     if (battpct <= 10) {
-      g_string_printf(m->str, "%%{B%s}%%{F%s}%d%%%%{B-}%%{F-}",
-          m->alert_bgcolor->str, m->alert_fgcolor->str, battpct);
+      g_string_printf(m->str, "%%{B%s}%%{F%s}%s%d%%%%{B-}%%{F-}",
+          m->alert_bgcolor->str, m->alert_fgcolor->str, m->battery_empty_icon->str, battpct);
     } else {
-      g_string_printf(m->str, "%d%%", battpct);
+      g_string_printf(m->str, "%s%d%%", m->battery_full_icon->str, battpct);
     }
   } else {
-    g_string_printf(m->str, "!");
+    g_string_printf(m->str, "%s!", m->battery_full_icon->str);
   }
 
   if (battery_now_file != NULL)
@@ -97,6 +103,8 @@ void battery_free(void* ptr) {
   monitor_null_check(m, "battery_monitor", "free");
 
   g_string_free(m->str, TRUE);
+  g_string_free(m->battery_full_icon, TRUE);
+  g_string_free(m->battery_empty_icon, TRUE);
   g_string_free(m->alert_fgcolor, TRUE);
   g_string_free(m->alert_bgcolor, TRUE);
   g_string_free(m->battery_full_path_str, TRUE);

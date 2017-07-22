@@ -11,10 +11,17 @@
 #include "status_bar.h"
 #include "base_monitor.h"
 
+// volume_init(loud_icon, mute_icon)
 void* volume_init(GArray* arguments) {
   struct volume_monitor* m = malloc(sizeof(struct volume_monitor));
 
   m->base = base_monitor_init(volume_sleep_time, volume_update_text, volume_free);
+
+  char* loud_icon = g_array_index(arguments, GString*, 0)->str;
+  m->loud_icon = g_string_new(loud_icon);
+
+  char* mute_icon = g_array_index(arguments, GString*, 1)->str;
+  m->mute_icon = g_string_new(mute_icon);
 
   m->str = g_string_new(NULL);
 
@@ -87,11 +94,12 @@ gboolean volume_update_text(void* ptr) {
   int vol_mute_code = get_vol_mute(&vol, &mute);
 
   if (vol_mute_code != 0) {
-    g_string_printf(m->str, "!");
+    g_string_printf(m->str, "%s!", m->loud_icon->str);
   } else {
-    if (mute != 0 && vol > -999999) {
-      g_string_printf(m->str, "%ld", vol/100);
-    }
+    if (mute == 0 || vol < -999999)  // muted
+      g_string_printf(m->str, "%s", m->mute_icon->str);
+    else
+      g_string_printf(m->str, "%s%ld", m->loud_icon->str, vol/100);
   }
 
   g_mutex_lock(m->base->mutex);
@@ -111,9 +119,12 @@ void volume_free(void* ptr) {
 
   snd_config_update_free_global();
 
-  base_monitor_free(m->base);
-
   g_string_free(m->str, TRUE);
+
+  g_string_free(m->loud_icon, TRUE);
+  g_string_free(m->mute_icon, TRUE);
+
+  base_monitor_free(m->base);
 
   free(m);
 }

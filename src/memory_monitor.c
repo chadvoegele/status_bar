@@ -14,10 +14,14 @@
 
 #define MAX_MEMINFO_LENGTH 100
 
+// memory_init(icon)
 void* memory_init(GArray* arguments) {
   struct memory_monitor* m = malloc(sizeof(struct memory_monitor));
 
   m->base = base_monitor_init(memory_sleep_time, memory_update_text, memory_free);
+
+  char* icon = g_array_index(arguments, GString*, 0)->str;
+  m->icon = g_string_new(icon);
 
   m->str = g_string_new(NULL);
 
@@ -49,9 +53,9 @@ gboolean memory_update_text(void* ptr) {
   int usage_pct = 100 * (1 - (1.0 * available) / (1.0 * total));
 
   if (total != -1) {
-    g_string_printf(m->str, "%d%%", usage_pct);
+    g_string_printf(m->str, "%s%d%%", m->icon->str, usage_pct);
   } else {
-    g_string_printf(m->str, "!");
+    g_string_printf(m->str, "%s!", m->icon->str);
   }
 
   if (mem_file != NULL)
@@ -74,6 +78,7 @@ void memory_free(void* ptr) {
 
   base_monitor_free(m->base);
 
+  g_string_free(m->icon, TRUE);
   g_string_free(m->str, TRUE);
   free(m);
 }

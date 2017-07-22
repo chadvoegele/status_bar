@@ -12,10 +12,14 @@
 #include "base_monitor.h"
 #include "thinkpad_fan_monitor.h"
 
+// thinkpad_fan_init(icon)
 void* thinkpad_fan_init(GArray* arguments) {
   struct thinkpad_fan_monitor* m = malloc(sizeof(struct thinkpad_fan_monitor));
 
   m->base = base_monitor_init(thinkpad_fan_sleep_time, thinkpad_fan_update_text, thinkpad_fan_free);
+
+  char* icon = g_array_index(arguments, GString*, 0)->str;
+  m->icon = g_string_new(icon);
 
   m->str = g_string_new(NULL);
 
@@ -41,10 +45,10 @@ gboolean thinkpad_fan_update_text(void* ptr) {
     n_read = fscanf(fan_file, "%*s %*s %*s %d", &speed);
 
   if (n_read == 1) {
-    g_string_printf(m->str, "%d", speed);
+    g_string_printf(m->str, "%s%d", m->icon->str, speed);
   }
   else {
-    g_string_printf(m->str, "!");
+    g_string_printf(m->str, "%s!", m->icon->str);
   }
 
   if (fan_file != NULL)
@@ -64,6 +68,8 @@ int thinkpad_fan_sleep_time(void* ptr) {
 void thinkpad_fan_free(void* ptr) {
   struct thinkpad_fan_monitor* m = (struct thinkpad_fan_monitor*)ptr;
   monitor_null_check(m, "thinkpad_fan_monitor", "free");
+
+  g_string_free(m->icon, TRUE);
 
   base_monitor_free(m->base);
 

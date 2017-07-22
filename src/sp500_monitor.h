@@ -13,6 +13,8 @@
 struct sp500_monitor {
   struct base_monitor* base;
 
+  GString* icon;
+
   GString* request_str;
   char* err;
   GString* res;
@@ -24,4 +26,4 @@ gboolean sp500_update_text(void*);
 int sp500_sleep_time(void*);
 void sp500_free(void*);
 
-int format_price(GString*);
+int format_price(GString*, GString*);

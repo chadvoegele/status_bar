@@ -14,6 +14,9 @@
 struct volume_monitor {
   struct base_monitor* base;
 
+  GString* loud_icon;
+  GString* mute_icon;
+
   GString* str;
 };
 

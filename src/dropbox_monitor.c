@@ -14,6 +14,7 @@
 #include "base_monitor.h"
 #include "dropbox_monitor.h"
 
+// dropbox_init(icon)
 void* dropbox_init(GArray* arguments) {
   struct dropbox_monitor* m = malloc(sizeof(struct dropbox_monitor));
 
@@ -21,9 +22,11 @@ void* dropbox_init(GArray* arguments) {
 
   setup_sockaddr(&m->remote, &m->addr_len);
   m->status_req = "get_dropbox_status\ndone\n";
+  char* icon = g_array_index(arguments, GString*, 0)->str;
+  m->icon = g_string_new(icon);
 
-  m->err = malloc(2*sizeof(char));
-  sprintf(m->err, "!");
+  m->err = malloc((strlen(m->icon->str) + 2)*sizeof(char));
+  sprintf(m->err, "%s!", m->icon->str);
 
   m->socket = -1;
   m->conn = -1;
@@ -68,7 +71,7 @@ gboolean dropbox_update_text(void* ptr) {
         if (rec_status == -1) {
           fprintf(stderr, "Bad dropbox response: %s\n", m->response->str);
         } else {
-          format_response(m->response);
+          format_response(m->response, m->icon);
           output = m->response->str;
         }
       }
@@ -96,6 +99,7 @@ void dropbox_free(void* ptr) {
     close(m->socket);
   }
 
+  g_string_free(m->icon, TRUE);
   g_string_free(m->response, TRUE);
 
   base_monitor_free(m->base);
@@ -141,7 +145,7 @@ int receive(int sock, GString* response) {
   }
 }
 
-void format_response(GString* response) {
+void format_response(GString* response, GString* icon) {
   char** words = g_strsplit(response->str, "\n", -1);
 
   char** word = words;
@@ -151,6 +155,7 @@ void format_response(GString* response) {
       g_strstrip(*word);
 
       response = g_string_truncate(response, 0);
+      response = g_string_append(response, icon->str);
       response = g_string_append(response, *word);
 
       break;

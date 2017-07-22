@@ -13,10 +13,14 @@
 
 typedef struct utmp utmp_t;
 
+// users_init(icon)
 void* users_init(GArray* arguments) {
   struct users_monitor* m = malloc(sizeof(struct users_monitor));
 
   m->base = base_monitor_init(users_sleep_time, users_update_text, users_free);
+
+  char* icon = g_array_index(arguments, GString*, 0)->str;
+  m->icon = g_string_new(icon);
 
   m->str = g_string_new(NULL);
 
@@ -38,7 +42,7 @@ gboolean users_update_text(void* ptr) {
   }
   endutent();
 
-  g_string_printf(m->str, "%d", nusers);
+  g_string_printf(m->str, "%s%d", m->icon->str, nusers);
 
   g_mutex_lock(m->base->mutex);
   m->base->text = g_string_assign(m->base->text, m->str->str);
@@ -56,6 +60,8 @@ void users_free(void* ptr) {
   monitor_null_check(m, "users_monitor", "free");
 
   g_string_free(m->str, TRUE);
+
+  g_string_free(m->icon, TRUE);
 
   base_monitor_free(m->base);
 

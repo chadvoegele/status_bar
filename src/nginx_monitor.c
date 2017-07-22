@@ -14,20 +14,23 @@
 #include "http_download.h"
 #include "configs.h"
 
-// nginx_init(status_uri)
+// nginx_init(icon, status_uri)
 void* nginx_init(GArray* arguments) {
   struct nginx_monitor* m = malloc(sizeof(struct nginx_monitor));
 
   m->base = base_monitor_init(nginx_sleep_time, nginx_update_text, nginx_free);
 
-  char* status_uri = g_array_index(arguments, GString*, 0)->str;
+  char* icon = g_array_index(arguments, GString*, 0)->str;
+  m->icon = g_string_new(icon);
+
+  char* status_uri = g_array_index(arguments, GString*, 1)->str;
   m->request_str = g_string_new(status_uri);
 
   m->res = g_string_new(NULL);
   m->curl = curl_easy_init();
 
-  m->err = malloc(2*sizeof(char));
-  sprintf(m->err, "!");
+  m->err = malloc((strlen(m->icon->str) + 2)*sizeof(char));
+  sprintf(m->err, "%s!", m->icon->str);
 
   return m;
 }
@@ -39,7 +42,7 @@ gboolean nginx_update_text(void* ptr) {
   CURLcode code = download_data(m->curl, m->request_str->str, m->res);
   char* output;
 
-  if (code == CURLE_OK && format_nginx_status(m->res) != -1) {
+  if (code == CURLE_OK && format_nginx_status(m->res, m->icon) != -1) {
     output = m->res->str;
   } else {
     output = m->err;
@@ -60,9 +63,11 @@ void nginx_free(void* ptr) {
   struct nginx_monitor* m = (struct nginx_monitor*)ptr;
   monitor_null_check(m, "nginx_monitor", "free");
 
+  g_string_free(m->icon, TRUE);
+  g_string_free(m->request_str, TRUE);
+
   free(m->err);
   g_string_free(m->res, TRUE);
-  g_string_free(m->request_str, TRUE);
   curl_easy_cleanup(m->curl);
 
   base_monitor_free(m->base);
@@ -70,11 +75,11 @@ void nginx_free(void* ptr) {
   free(m);
 }
 
-int format_nginx_status(GString* res) {
+int format_nginx_status(GString* res, GString* icon) {
   int code = 0;
 
   int active;
-  GString* output = g_string_new(NULL);
+  GString* output = g_string_new(icon->str);
 
   char** words = g_strsplit(res->str, "\n", -1);
 

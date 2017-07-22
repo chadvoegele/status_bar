@@ -11,6 +11,9 @@
 struct net_monitor {
   struct base_monitor* base;
 
+  GString* tx_icon;
+  GString* rx_icon;
+
   GArray* rx;
   GArray* tx;
   int last_rx;

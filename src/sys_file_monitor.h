@@ -11,6 +11,7 @@
 struct sys_file_monitor {
   struct base_monitor* base;
 
+  GString* icon;
   GArray* temp_filenames;
   int(*convert)(int);
   GString* str;
