@@ -24,7 +24,7 @@ struct dropbox_monitor {
   GString* response;
 };
 
-void* dropbox_init(GKeyFile*);
+void* dropbox_init(GArray*);
 gboolean dropbox_update_text(void*);
 int dropbox_sleep_time(void*);
 void dropbox_free(void*);

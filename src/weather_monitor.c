@@ -14,20 +14,16 @@
 #include "base_monitor.h"
 #include "configs.h"
 
-void* weather_init(GKeyFile* configs) {
+// weather_init(weather_loc)
+void* weather_init(GArray* arguments) {
   struct weather_monitor* m = malloc(sizeof(struct weather_monitor));
 
   m->base = base_monitor_init(weather_sleep_time, weather_update_text, weather_free);
 
-  GError* error = NULL;
-  char* weather_loc = g_key_file_get_string(
-      configs, "configs", "weather_loc", &error);
-  fail_on_error(error);
+  char* weather_loc = g_array_index(arguments, GString*, 0)->str;
 
   m->request_str = g_string_new(NULL);
-  g_string_printf(m->request_str,
-      "http://w1.weather.gov/xml/current_obs/%s.xml", weather_loc);
-  g_free(weather_loc);
+  g_string_printf(m->request_str, "http://w1.weather.gov/xml/current_obs/%s.xml", weather_loc);
 
   m->res = g_string_new(NULL);
   m->curl = curl_easy_init();

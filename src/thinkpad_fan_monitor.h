@@ -14,7 +14,7 @@ struct thinkpad_fan_monitor {
   GString* str;
 };
 
-void* thinkpad_fan_init(GKeyFile*);
+void* thinkpad_fan_init(GArray*);
 gboolean thinkpad_fan_update_text(void*);
 int thinkpad_fan_sleep_time(void*);
 void thinkpad_fan_free(void*);

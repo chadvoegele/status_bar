@@ -13,7 +13,7 @@
 #include "sys_file_monitor.h"
 
 void* sys_file_init_config(gunichar icon, GArray* temp_filenames,
-    int(*convert)(int), GKeyFile* configs) {
+    int(*convert)(int), GArray* arguments) {
   struct sys_file_monitor* m = malloc(sizeof(struct sys_file_monitor));
 
   m->base = base_monitor_init(sys_file_sleep_time, sys_file_update_text, sys_file_free);

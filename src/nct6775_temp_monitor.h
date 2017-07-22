@@ -7,6 +7,6 @@
 
 #include "status_bar.h"
 
-void* nct6775_temp_init(GKeyFile*);
+void* nct6775_temp_init(GArray*);
 
 int convert_nct6775_temp(int);

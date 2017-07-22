@@ -12,7 +12,7 @@
 #include "sp500_monitor.h"
 #include "http_download.h"
 
-void* sp500_init(GKeyFile* configs) {
+void* sp500_init(GArray* arguments) {
   struct sp500_monitor* m = malloc(sizeof(struct sp500_monitor));
 
   m->base = base_monitor_init(sp500_sleep_time, sp500_update_text, sp500_free);

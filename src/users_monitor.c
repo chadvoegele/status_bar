@@ -13,7 +13,7 @@
 
 typedef struct utmp utmp_t;
 
-void* users_init(GKeyFile* configs) {
+void* users_init(GArray* arguments) {
   struct users_monitor* m = malloc(sizeof(struct users_monitor));
 
   m->base = base_monitor_init(users_sleep_time, users_update_text, users_free);

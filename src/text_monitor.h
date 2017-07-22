@@ -16,7 +16,7 @@ struct text_monitor {
   GString* str;
 };
 
-void* text_init(GKeyFile*);
+void* text_init(GArray*);
 gboolean text_update_text(void*);
 int text_sleep_time(void*);
 void text_free(void*);

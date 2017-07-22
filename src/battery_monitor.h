@@ -19,7 +19,7 @@ struct battery_monitor {
   GString* battery_now_path_str;
 };
 
-void* battery_init(GKeyFile*);
+void* battery_init(GArray*);
 gboolean battery_update_text(void*);
 int battery_sleep_time(void*);
 void battery_free(void*);

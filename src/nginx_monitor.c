@@ -14,19 +14,14 @@
 #include "http_download.h"
 #include "configs.h"
 
-void* nginx_init(GKeyFile* configs) {
+// nginx_init(status_uri)
+void* nginx_init(GArray* arguments) {
   struct nginx_monitor* m = malloc(sizeof(struct nginx_monitor));
 
   m->base = base_monitor_init(nginx_sleep_time, nginx_update_text, nginx_free);
 
-  GError* error = NULL;
-  char* status_uri = g_key_file_get_string(
-      configs, "configs", "nginx_status_uri", &error);
-  fail_on_error(error);
-
-  m->request_str = g_string_new(NULL);
-  g_string_printf(m->request_str, "%s", status_uri);
-  g_free(status_uri);
+  char* status_uri = g_array_index(arguments, GString*, 0)->str;
+  m->request_str = g_string_new(status_uri);
 
   m->res = g_string_new(NULL);
   m->curl = curl_easy_init();

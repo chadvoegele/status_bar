@@ -13,7 +13,7 @@
 #include "base_monitor.h"
 #include "thinkpad_temp_monitor.h"
 
-void* thinkpad_temp_init(GKeyFile* configs) {
+void* thinkpad_temp_init(GArray* arguments) {
   struct thinkpad_temp_monitor* m = malloc(sizeof(struct thinkpad_temp_monitor));
 
   m->base = base_monitor_init(thinkpad_temp_sleep_time, thinkpad_temp_update_text, thinkpad_temp_free);

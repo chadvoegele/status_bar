@@ -17,7 +17,7 @@ struct clock_monitor {
   char* str;
 };
 
-void* clock_init(GKeyFile*);
+void* clock_init(GArray*);
 gboolean clock_update_text(void*);
 int clock_sleep_time(void*);
 void clock_free(void*);

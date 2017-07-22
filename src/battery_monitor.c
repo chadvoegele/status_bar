@@ -13,44 +13,25 @@
 #include "configs.h"
 #include "battery_monitor.h"
 
-void* battery_init(GKeyFile* configs) {
+// battery_init(alert_fgcolor, alert_bgcolor, battery_full_path, battery_now_path)
+void* battery_init(GArray* arguments) {
   struct battery_monitor* m = malloc(sizeof(struct battery_monitor));
 
   m->base = base_monitor_init(battery_sleep_time, battery_update_text, battery_free);
 
-  GError* error = NULL;
-  char* alert_fgcolor = g_key_file_get_string(
-      configs, "configs", "alert_fgcolor", &error);
-  fail_on_error(error);
+  char* alert_fgcolor = g_array_index(arguments, GString*, 0)->str;
   m->alert_fgcolor = g_string_new(alert_fgcolor);
-  g_free(alert_fgcolor);
 
-  error = NULL;
-  char* alert_bgcolor = g_key_file_get_string(
-      configs, "configs", "alert_bgcolor", &error);
-  fail_on_error(error);
+  char* alert_bgcolor = g_array_index(arguments, GString*, 1)->str;
   m->alert_bgcolor = g_string_new(alert_bgcolor);
-  g_free(alert_bgcolor);
+
+  char* battery_full_path = g_array_index(arguments, GString*, 2)->str;
+  m->battery_full_path_str = g_string_new(battery_full_path);
+
+  char* battery_now_path = g_array_index(arguments, GString*, 3)->str;
+  m->battery_now_path_str = g_string_new(battery_now_path);
 
   m->str = g_string_new(NULL);
-
-  error = NULL;
-  char* battery_full_path = g_key_file_get_string(
-      configs, "configs", "battery_full_path", &error);
-  fail_on_error(error);
-
-  m->battery_full_path_str = g_string_new(NULL);
-  g_string_printf(m->battery_full_path_str, "%s", battery_full_path);
-  g_free(battery_full_path);
-
-  error = NULL;
-  char* battery_now_path = g_key_file_get_string(
-      configs, "configs", "battery_now_path", &error);
-  fail_on_error(error);
-
-  m->battery_now_path_str = g_string_new(NULL);
-  g_string_printf(m->battery_now_path_str, "%s", battery_now_path);
-  g_free(battery_now_path);
 
   return m;
 }

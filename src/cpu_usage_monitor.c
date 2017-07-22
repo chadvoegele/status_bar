@@ -14,7 +14,7 @@
 
 #define N_TIMES 10
 
-void* cpu_usage_init(GKeyFile* configs) {
+void* cpu_usage_init(GArray* arguments) {
   struct cpu_usage_monitor* m = malloc(sizeof(struct cpu_usage_monitor));
 
   m->base = base_monitor_init(cpu_usage_sleep_time, cpu_usage_update_text, cpu_usage_free);

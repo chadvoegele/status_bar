@@ -14,7 +14,7 @@ struct users_monitor {
   GString* str;
 };
 
-void* users_init(GKeyFile*);
+void* users_init(GArray*);
 gboolean users_update_text(void*);
 int users_sleep_time(void*);
 void users_free(void*);

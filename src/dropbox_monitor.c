@@ -14,7 +14,7 @@
 #include "base_monitor.h"
 #include "dropbox_monitor.h"
 
-void* dropbox_init(GKeyFile* configs) {
+void* dropbox_init(GArray* arguments) {
   struct dropbox_monitor* m = malloc(sizeof(struct dropbox_monitor));
 
   m->base = base_monitor_init(dropbox_sleep_time, dropbox_update_text, dropbox_free);

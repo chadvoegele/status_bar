@@ -16,7 +16,7 @@ struct memory_monitor {
   GString* str;
 };
 
-void* memory_init(GKeyFile*);
+void* memory_init(GArray*);
 gboolean memory_update_text(void*);
 int memory_sleep_time(void*);
 void memory_free(void*);

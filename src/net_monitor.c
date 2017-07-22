@@ -12,7 +12,7 @@
 #include "status_bar.h"
 #include "base_monitor.h"
 
-void* net_init(GKeyFile* configs) {
+void* net_init(GArray* arguments) {
   struct net_monitor* m = malloc(sizeof(struct net_monitor));
 
   m->base = base_monitor_init(net_sleep_time, net_update_text, net_free);

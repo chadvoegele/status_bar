@@ -20,7 +20,7 @@ struct nginx_monitor {
   CURL* curl;
 };
 
-void* nginx_init(GKeyFile*);
+void* nginx_init(GArray*);
 gboolean nginx_update_text(void*);
 int nginx_sleep_time(void*);
 void nginx_free(void*);

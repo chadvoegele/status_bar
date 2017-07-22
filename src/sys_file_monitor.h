@@ -21,5 +21,5 @@ gboolean sys_file_update_text(void*);
 int sys_file_sleep_time(void*);
 void sys_file_free(void*);
 
-void* sys_file_init_config(gunichar, GArray*, int(*convert)(int), GKeyFile*);
+void* sys_file_init_config(gunichar, GArray*, int(*convert)(int), GArray*);
 void append_filename(GArray*, char*);

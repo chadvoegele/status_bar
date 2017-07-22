@@ -14,7 +14,7 @@ struct thinkpad_temp_monitor {
   GString* str;
 };
 
-void* thinkpad_temp_init(GKeyFile*);
+void* thinkpad_temp_init(GArray*);
 gboolean thinkpad_temp_update_text(void*);
 int thinkpad_temp_sleep_time(void*);
 void thinkpad_temp_free(void*);

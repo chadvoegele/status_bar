@@ -15,7 +15,7 @@ struct cpu_usage_monitor {
   unsigned int last_idle;
 };
 
-void* cpu_usage_init(GKeyFile*);
+void* cpu_usage_init(GArray*);
 gboolean cpu_usage_update_text(void*);
 int cpu_usage_sleep_time(void*);
 void cpu_usage_free(void*);

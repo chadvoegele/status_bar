@@ -21,7 +21,7 @@ struct weather_monitor {
   CURL* curl;
 };
 
-void* weather_init(GKeyFile*);
+void* weather_init(GArray*);
 gboolean weather_update_text(void*);
 int weather_sleep_time(void*);
 void weather_free(void*);

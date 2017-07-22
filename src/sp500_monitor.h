@@ -20,7 +20,7 @@ struct sp500_monitor {
   CURL* curl;
 };
 
-void* sp500_init(GKeyFile*);
+void* sp500_init(GArray*);
 gboolean sp500_update_text(void*);
 int sp500_sleep_time(void*);
 void sp500_free(void*);

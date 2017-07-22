@@ -18,7 +18,7 @@ struct net_monitor {
   GString* str;
 };
 
-void* net_init(GKeyFile*);
+void* net_init(GArray*);
 gboolean net_update_text(void*);
 int net_sleep_time(void*);
 void net_free(void*);

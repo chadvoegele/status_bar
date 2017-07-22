@@ -17,7 +17,7 @@ struct volume_monitor {
   GString* str;
 };
 
-void* volume_init(GKeyFile*);
+void* volume_init(GArray*);
 gboolean volume_update_text(void*);
 int volume_sleep_time(void*);
 void volume_free(void*);

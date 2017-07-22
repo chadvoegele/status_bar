@@ -7,6 +7,6 @@
 
 #include "status_bar.h"
 
-void* core_temp_init(GKeyFile*);
+void* core_temp_init(GArray*);
 
 int convert_core_temp(int);

@@ -96,6 +96,23 @@ void build_display_cmd_str(GKeyFile* configs, GString* str) {
   g_free(pipeto);
 }
 
+void parse_monitor_config(char* str, GString* monitor, GArray* arguments) {
+  GScanner* scanner = g_scanner_new(NULL);
+  g_scanner_input_text(scanner, str, strlen(str));
+  while (g_scanner_get_next_token(scanner) != G_TOKEN_EOF) {
+    GTokenType type = g_scanner_cur_token(scanner);
+    if (type == G_TOKEN_IDENTIFIER) {
+      g_string_assign(monitor, g_scanner_cur_value(scanner).v_identifier);
+    }
+    if (type == G_TOKEN_STRING) {
+      GString* arg = g_string_new_len(NULL, 100);
+      g_string_assign(arg, g_scanner_cur_value(scanner).v_string);
+      g_array_append_val(arguments, arg);
+    }
+  }
+  g_scanner_destroy(scanner);
+}
+
 void init_monitors(GKeyFile* configs, gsize* length, void*** monitors) {
   char** monitor_configs;
   GError* error = NULL;
@@ -104,53 +121,66 @@ void init_monitors(GKeyFile* configs, gsize* length, void*** monitors) {
 
   *monitors = malloc((*length)*sizeof(void*));
 
+  GString* monitor = g_string_new_len(NULL, 100);
+  GArray* arguments = g_array_new(FALSE, FALSE, sizeof(GString*));
+
   for (int i = 0; i < *length; i++) {
-    void* m = convert_string_to_monitor(monitor_configs[i], configs);
+    parse_monitor_config(monitor_configs[i], monitor, arguments);
+
+    void* m = convert_string_to_monitor(monitor->str, arguments);
     (*monitors)[i] = m;
+
+    for (size_t i = 0; i < arguments->len; i++) {
+      g_string_free(g_array_index(arguments, GString*, i), TRUE);
+    }
+    g_array_set_size(arguments, 0);
   }
+
+  g_string_free(monitor, TRUE);
+  g_array_free(arguments, TRUE);
 
   g_strfreev(monitor_configs);
 }
 
-void* convert_string_to_monitor(char* str, GKeyFile* configs) {
+void* convert_string_to_monitor(char* str, GArray* arguments) {
   if (strcmp("net", str) == 0) {
-    return net_init(configs);
+    return net_init(arguments);
   } else if (strcmp("clock", str) == 0) {
-    return clock_init(configs);
+    return clock_init(arguments);
   } else if (strcmp("dropbox", str) == 0) {
-    return dropbox_init(configs);
+    return dropbox_init(arguments);
   } else if (strcmp("memory", str) == 0) {
-    return memory_init(configs);
+    return memory_init(arguments);
   } else if (strcmp("sp500", str) == 0) {
-    return sp500_init(configs);
+    return sp500_init(arguments);
   } else if (strcmp("battery", str) == 0) {
-    return battery_init(configs);
+    return battery_init(arguments);
   } else if (strcmp("thinkpad_fan", str) == 0) {
-    return thinkpad_fan_init(configs);
+    return thinkpad_fan_init(arguments);
   } else if (strcmp("thinkpad_temp", str) == 0) {
-    return thinkpad_temp_init(configs);
+    return thinkpad_temp_init(arguments);
   } else if (strcmp("weather", str) == 0) {
-    return weather_init(configs);
+    return weather_init(arguments);
   } else if (strcmp("core_temp", str) == 0) {
-    return core_temp_init(configs);
+    return core_temp_init(arguments);
   } else if (strcmp("it87_temp", str) == 0) {
-    return it87_temp_init(configs);
+    return it87_temp_init(arguments);
   } else if (strcmp("it87_fan", str) == 0) {
-    return it87_fan_init(configs);
+    return it87_fan_init(arguments);
   } else if (strcmp("nct6775_temp", str) == 0) {
-    return nct6775_temp_init(configs);
+    return nct6775_temp_init(arguments);
   } else if (strcmp("nct6775_fan", str) == 0) {
-    return nct6775_fan_init(configs);
+    return nct6775_fan_init(arguments);
   } else if (strcmp("volume", str) == 0) {
-    return volume_init(configs);
+    return volume_init(arguments);
   } else if (strcmp("nginx", str) == 0) {
-    return nginx_init(configs);
+    return nginx_init(arguments);
   } else if (strcmp("cpu_usage", str) == 0) {
-    return cpu_usage_init(configs);
+    return cpu_usage_init(arguments);
   } else if (strcmp("users", str) == 0) {
-    return users_init(configs);
+    return users_init(arguments);
   } else if (strcmp("text", str) == 0) {
-    return text_init(configs);
+    return text_init(arguments);
   } else {
     fprintf(stderr, "Monitor %s not found.\n", str);
     exit(EXIT_FAILURE);

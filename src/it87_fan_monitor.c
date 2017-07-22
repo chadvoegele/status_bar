@@ -15,7 +15,7 @@ int convert_it87_fan(int temp) {
   return temp;
 }
 
-void* it87_fan_init(GKeyFile* configs) {
+void* it87_fan_init(GArray* arguments) {
   GArray* temp_filenames = g_array_new(FALSE, FALSE, sizeof(GString*));
   append_filename(temp_filenames,
       "/sys/devices/platform/it87.656/fan1_input");
@@ -24,5 +24,5 @@ void* it87_fan_init(GKeyFile* configs) {
 
   gunichar icon;
   sscanf("U+62384", "U+%06"G_GINT32_FORMAT"X", &icon);
-  return sys_file_init_config(icon, temp_filenames, convert_it87_fan, configs);
+  return sys_file_init_config(icon, temp_filenames, convert_it87_fan, arguments);
 }

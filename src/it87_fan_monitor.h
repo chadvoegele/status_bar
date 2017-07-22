@@ -7,6 +7,6 @@
 
 #include "status_bar.h"
 
-void* it87_fan_init(GKeyFile*);
+void* it87_fan_init(GArray*);
 
 int convert_it87_fan(int);

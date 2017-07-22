@@ -11,7 +11,7 @@
 #include "status_bar.h"
 #include "base_monitor.h"
 
-void* volume_init(GKeyFile* configs) {
+void* volume_init(GArray* arguments) {
   struct volume_monitor* m = malloc(sizeof(struct volume_monitor));
 
   m->base = base_monitor_init(volume_sleep_time, volume_update_text, volume_free);

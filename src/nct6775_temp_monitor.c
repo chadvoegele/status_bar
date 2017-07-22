@@ -15,7 +15,7 @@ int convert_nct6775_temp(int temp) {
   return temp/1000;
 }
 
-void* nct6775_temp_init(GKeyFile* configs) {
+void* nct6775_temp_init(GArray* arguments) {
   GArray* temp_filenames = g_array_new(FALSE, FALSE, sizeof(GString*));
   append_filename(temp_filenames,
       "/sys/devices/platform/nct6775.2576/hwmon/hwmon1/temp1_input");
@@ -26,5 +26,5 @@ void* nct6775_temp_init(GKeyFile* configs) {
 
   gunichar icon;
   sscanf("U+62529", "U+%06"G_GINT32_FORMAT"X", &icon);
-  return sys_file_init_config(icon, temp_filenames, convert_nct6775_temp, configs);
+  return sys_file_init_config(icon, temp_filenames, convert_nct6775_temp, arguments);
 }

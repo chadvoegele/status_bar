@@ -14,4 +14,5 @@ void fail_on_error(GError*);
 void load_configs(GKeyFile*, int argc, char** argv);
 void init_monitors(GKeyFile*, gsize*, void***);
 void build_display_cmd_str(GKeyFile*, GString*);
-void* convert_string_to_monitor(char*, GKeyFile*);
+void parse_monitor_config(char* str, GString* monitor, GArray* arguments);
+void* convert_string_to_monitor(char*, GArray*);
