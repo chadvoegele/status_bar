@@ -13,6 +13,8 @@
 struct text_monitor {
   struct base_monitor* base;
 
+  GString* text;
+
   GString* str;
 };
 
