@@ -68,10 +68,7 @@ gboolean cpu_usage_update_text(void* ptr) {
     m->last_idle = idle;
   }
 
-  gunichar icon;
-  sscanf("U+62529", "U+%06"G_GINT32_FORMAT"X", &icon);
   m->str = g_string_set_size(m->str, 0);
-  g_string_append_unichar(m->str, icon);
 
   if (n_read == N_TIMES) {
     g_string_append_printf(m->str, "%d%%", (int)(100*usage_pct));

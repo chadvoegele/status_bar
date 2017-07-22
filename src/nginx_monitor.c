@@ -25,10 +25,9 @@ void* nginx_init(GArray* arguments) {
 
   m->res = g_string_new(NULL);
   m->curl = curl_easy_init();
-  m->icon = "";
 
-  m->err = malloc((strlen(m->icon) + 2)*sizeof(char));
-  sprintf(m->err, "%s!", m->icon);
+  m->err = malloc(2*sizeof(char));
+  sprintf(m->err, "!");
 
   return m;
 }
@@ -40,7 +39,7 @@ gboolean nginx_update_text(void* ptr) {
   CURLcode code = download_data(m->curl, m->request_str->str, m->res);
   char* output;
 
-  if (code == CURLE_OK && format_nginx_status(m->res, m->icon) != -1) {
+  if (code == CURLE_OK && format_nginx_status(m->res) != -1) {
     output = m->res->str;
   } else {
     output = m->err;
@@ -71,11 +70,11 @@ void nginx_free(void* ptr) {
   free(m);
 }
 
-int format_nginx_status(GString* res, char* icon) {
+int format_nginx_status(GString* res) {
   int code = 0;
 
   int active;
-  GString* output = g_string_new(icon);
+  GString* output = g_string_new(NULL);
 
   char** words = g_strsplit(res->str, "\n", -1);
 

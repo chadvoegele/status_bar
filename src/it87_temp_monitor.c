@@ -24,7 +24,5 @@ void* it87_temp_init(GArray* arguments) {
   append_filename(temp_filenames,
       "/sys/devices/platform/it87.656/temp3_input");
 
-  gunichar icon;
-  sscanf("U+62529", "U+%06"G_GINT32_FORMAT"X", &icon);
-  return sys_file_init_config(icon, temp_filenames, convert_it87_temp, arguments);
+  return sys_file_init_config(temp_filenames, convert_it87_temp, arguments);
 }

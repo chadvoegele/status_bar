@@ -12,13 +12,12 @@
 #include "base_monitor.h"
 #include "sys_file_monitor.h"
 
-void* sys_file_init_config(gunichar icon, GArray* temp_filenames,
+void* sys_file_init_config(GArray* temp_filenames,
     int(*convert)(int), GArray* arguments) {
   struct sys_file_monitor* m = malloc(sizeof(struct sys_file_monitor));
 
   m->base = base_monitor_init(sys_file_sleep_time, sys_file_update_text, sys_file_free);
 
-  m->icon = icon;
   m->temp_filenames = temp_filenames;
   m->convert = convert;
   m->str = g_string_new(NULL);
@@ -59,7 +58,6 @@ gboolean sys_file_update_text(void* ptr) {
   }
 
   m->str = g_string_set_size(m->str, 0);
-  g_string_append_unichar(m->str, m->icon);
   if (n_read == n_temps) {
     if (n_temps == 1) {
       g_string_append_printf(m->str, "%d", m->convert(min_temp));

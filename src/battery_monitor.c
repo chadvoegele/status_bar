@@ -66,13 +66,13 @@ gboolean battery_update_text(void* ptr) {
   if (n_full == 1 && n_now == 1) {
     int battpct = (int)(100.0*now/full);
     if (battpct <= 10) {
-      g_string_printf(m->str, "%%{B%s}%%{F%s}%d%%%%{B-}%%{F-}",
+      g_string_printf(m->str, "%%{B%s}%%{F%s}%d%%%%{B-}%%{F-}",
           m->alert_bgcolor->str, m->alert_fgcolor->str, battpct);
     } else {
-      g_string_printf(m->str, "%d%%", battpct);
+      g_string_printf(m->str, "%d%%", battpct);
     }
   } else {
-    g_string_printf(m->str, "!");
+    g_string_printf(m->str, "!");
   }
 
   if (battery_now_file != NULL)

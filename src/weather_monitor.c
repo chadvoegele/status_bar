@@ -27,10 +27,9 @@ void* weather_init(GArray* arguments) {
 
   m->res = g_string_new(NULL);
   m->curl = curl_easy_init();
-  m->icon = "";
 
-  m->err = malloc((strlen(m->icon) + 2)*sizeof(char));
-  sprintf(m->err, "%s!", m->icon);
+  m->err = malloc(2*sizeof(char));
+  sprintf(m->err, "!");
 
   return m;
 }
@@ -43,7 +42,7 @@ gboolean weather_update_text(void* ptr) {
 
   CURLcode code = download_data(m->curl, m->request_str->str, m->res);
 
-  if (code == CURLE_OK && format_output(m->res, m->icon) != -1) {
+  if (code == CURLE_OK && format_output(m->res) != -1) {
     output = m->res->str;
   } else {
     output = m->err;
@@ -74,7 +73,7 @@ void weather_free(void* ptr) {
   free(m);
 }
 
-int format_output(GString* res, char* icon) {
+int format_output(GString* res) {
   int code = -1;
   int weather_code = -1;
   int temp_code = -1;
@@ -103,7 +102,6 @@ int format_output(GString* res, char* icon) {
   if (temp_str != NULL && weather_str != NULL
       && temp_code == 0 && weather_code == 0) {
     res = g_string_truncate(res, 0);
-    res = g_string_append(res, icon);
     res = g_string_append(res, temp_str);
     res = g_string_append(res, ", ");
     res = g_string_append(res, weather_str);

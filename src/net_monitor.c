@@ -43,7 +43,7 @@ gboolean net_update_text(void* ptr) {
   m->last_rx = this_rx;
   m->last_tx = this_tx;
 
-  g_string_printf(m->str, "%d%d", tx_speed, rx_speed);
+  g_string_printf(m->str, "%d/%d", tx_speed, rx_speed);
 
   g_mutex_lock(m->base->mutex);
   m->base->text = g_string_assign(m->base->text, m->str->str);

@@ -23,10 +23,9 @@ void* sp500_init(GArray* arguments) {
 
   m->res = g_string_new(NULL);
   m->curl = curl_easy_init();
-  m->icon = "";
 
-  m->err = malloc((strlen(m->icon) + 2)*sizeof(char));
-  sprintf(m->err, "%s!", m->icon);
+  m->err = malloc(2*sizeof(char));
+  sprintf(m->err, "!");
 
   return m;
 }
@@ -38,7 +37,7 @@ gboolean sp500_update_text(void* ptr) {
   CURLcode code = download_data(m->curl, m->request_str->str, m->res);
   char* output;
 
-  if (code == CURLE_OK && format_price(m->res, m->icon) != -1) {
+  if (code == CURLE_OK && format_price(m->res) != -1) {
     output = m->res->str;
   } else {
     output = m->err;
@@ -69,7 +68,7 @@ void sp500_free(void* ptr) {
   free(m);
 }
 
-int format_price(GString* res, char* icon) {
+int format_price(GString* res) {
   int code = -1;
 
   char* buf1 = malloc(strlen(res->str)*sizeof(char));
@@ -78,7 +77,7 @@ int format_price(GString* res, char* icon) {
   int nread = sscanf(res->str, "%[0-9.],%*s - %[+-0-9.]", buf1, buf2);
 
   if (nread == 2) {
-    g_string_printf(res, "%s%s (%s%%)", icon, buf1, buf2);
+    g_string_printf(res, "%s (%s%%)", buf1, buf2);
     code = 0;
   }
 

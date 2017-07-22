@@ -17,7 +17,6 @@ struct weather_monitor {
   GString* res;
   char* err;
   GString* request_str;
-  char* icon;
   CURL* curl;
 };
 
@@ -26,5 +25,5 @@ gboolean weather_update_text(void*);
 int weather_sleep_time(void*);
 void weather_free(void*);
 
-int format_output(GString*, char*);
+int format_output(GString*);
 int parse_xml_str(char*, const char*, const char*);

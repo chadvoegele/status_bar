@@ -49,9 +49,9 @@ gboolean memory_update_text(void* ptr) {
   int usage_pct = 100 * (1 - (1.0 * available) / (1.0 * total));
 
   if (total != -1) {
-    g_string_printf(m->str, "%d%%", usage_pct);
+    g_string_printf(m->str, "%d%%", usage_pct);
   } else {
-    g_string_printf(m->str, "!");
+    g_string_printf(m->str, "!");
   }
 
   if (mem_file != NULL)

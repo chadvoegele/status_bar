@@ -41,10 +41,10 @@ gboolean thinkpad_fan_update_text(void* ptr) {
     n_read = fscanf(fan_file, "%*s %*s %*s %d", &speed);
 
   if (n_read == 1) {
-    g_string_printf(m->str, "%d", speed);
+    g_string_printf(m->str, "%d", speed);
   }
   else {
-    g_string_printf(m->str, "!");
+    g_string_printf(m->str, "!");
   }
 
   if (fan_file != NULL)

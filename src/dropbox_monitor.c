@@ -21,10 +21,9 @@ void* dropbox_init(GArray* arguments) {
 
   setup_sockaddr(&m->remote, &m->addr_len);
   m->status_req = "get_dropbox_status\ndone\n";
-  m->icon = "";
 
-  m->err = malloc((strlen(m->icon) + 2)*sizeof(char));
-  sprintf(m->err, "%s!", m->icon);
+  m->err = malloc(2*sizeof(char));
+  sprintf(m->err, "!");
 
   m->socket = -1;
   m->conn = -1;
@@ -69,7 +68,7 @@ gboolean dropbox_update_text(void* ptr) {
         if (rec_status == -1) {
           fprintf(stderr, "Bad dropbox response: %s\n", m->response->str);
         } else {
-          format_response(m->response, m->icon);
+          format_response(m->response);
           output = m->response->str;
         }
       }
@@ -142,7 +141,7 @@ int receive(int sock, GString* response) {
   }
 }
 
-void format_response(GString* response, char* icon) {
+void format_response(GString* response) {
   char** words = g_strsplit(response->str, "\n", -1);
 
   char** word = words;
@@ -152,7 +151,6 @@ void format_response(GString* response, char* icon) {
       g_strstrip(*word);
 
       response = g_string_truncate(response, 0);
-      response = g_string_append(response, icon);
       response = g_string_append(response, *word);
 
       break;

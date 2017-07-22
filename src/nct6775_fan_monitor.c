@@ -24,7 +24,5 @@ void* nct6775_fan_init(GArray* arguments) {
   append_filename(temp_filenames,
       "/sys/devices/platform/nct6775.2576/hwmon/hwmon1/fan4_input");
 
-  gunichar icon;
-  sscanf("U+62384", "U+%06"G_GINT32_FORMAT"X", &icon);
-  return sys_file_init_config(icon, temp_filenames, convert_nct6775_fan, arguments);
+  return sys_file_init_config(temp_filenames, convert_nct6775_fan, arguments);
 }

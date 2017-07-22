@@ -57,11 +57,11 @@ gboolean thinkpad_temp_update_text(void* ptr) {
       max_temp = temp > max_temp ? temp : max_temp;
     }
 
-    g_string_printf(m->str, "%d%d",
+    g_string_printf(m->str, "%d%d",
         min_temp, max_temp);
 
   } else {
-    g_string_printf(m->str, "!");
+    g_string_printf(m->str, "!");
   }
 
   if (temp_file != NULL)

@@ -38,7 +38,7 @@ gboolean users_update_text(void* ptr) {
   }
   endutent();
 
-  g_string_printf(m->str, "%d", nusers);
+  g_string_printf(m->str, "%d", nusers);
 
   g_mutex_lock(m->base->mutex);
   m->base->text = g_string_assign(m->base->text, m->str->str);
