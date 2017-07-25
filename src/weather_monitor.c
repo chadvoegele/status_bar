@@ -14,8 +14,9 @@
 #include "base_monitor.h"
 #include "configs.h"
 
-// weather_init(icon, weather_loc)
 void* weather_init(GArray* arguments) {
+  monitor_arg_check("weather", arguments, "(icon, location_key)");
+
   struct weather_monitor* m = malloc(sizeof(struct weather_monitor));
 
   m->base = base_monitor_init(weather_sleep_time, weather_update_text, weather_free);

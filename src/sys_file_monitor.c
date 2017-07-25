@@ -14,6 +14,8 @@
 
 void* sys_file_init_config(GArray* temp_filenames,
     int(*convert)(int), GArray* arguments) {
+  monitor_arg_check("sys_file", arguments, "(icon)");
+
   struct sys_file_monitor* m = malloc(sizeof(struct sys_file_monitor));
 
   m->base = base_monitor_init(sys_file_sleep_time, sys_file_update_text, sys_file_free);

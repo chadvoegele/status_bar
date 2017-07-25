@@ -13,8 +13,9 @@
 #include "configs.h"
 #include "battery_monitor.h"
 
-// battery_init(battery_full_icon, battery_empty_icon, alert_fgcolor, alert_bgcolor, battery_full_path, battery_now_path)
 void* battery_init(GArray* arguments) {
+  monitor_arg_check("battery", arguments, "(battery_full_icon, battery_empty_icon, alert_fgcolor, alert_bgcolor, battery_full_path, battery_now_path)");
+
   struct battery_monitor* m = malloc(sizeof(struct battery_monitor));
 
   m->base = base_monitor_init(battery_sleep_time, battery_update_text, battery_free);

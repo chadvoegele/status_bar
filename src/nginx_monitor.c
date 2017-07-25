@@ -14,8 +14,9 @@
 #include "http_download.h"
 #include "configs.h"
 
-// nginx_init(icon, status_uri)
 void* nginx_init(GArray* arguments) {
+  monitor_arg_check("nginx", arguments, "(icon, status_uri)");
+
   struct nginx_monitor* m = malloc(sizeof(struct nginx_monitor));
 
   m->base = base_monitor_init(nginx_sleep_time, nginx_update_text, nginx_free);

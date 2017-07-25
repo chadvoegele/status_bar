@@ -14,8 +14,9 @@
 
 #define MAX_MEMINFO_LENGTH 100
 
-// memory_init(icon)
 void* memory_init(GArray* arguments) {
+  monitor_arg_check("memory", arguments, "(icon)");
+
   struct memory_monitor* m = malloc(sizeof(struct memory_monitor));
 
   m->base = base_monitor_init(memory_sleep_time, memory_update_text, memory_free);

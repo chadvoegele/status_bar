@@ -12,8 +12,9 @@
 #include "status_bar.h"
 #include "base_monitor.h"
 
-// net_init(tx_icon, rx_icon)
 void* net_init(GArray* arguments) {
+  monitor_arg_check("net", arguments, "(tx_icon, rx_icon)");
+
   struct net_monitor* m = malloc(sizeof(struct net_monitor));
 
   m->base = base_monitor_init(net_sleep_time, net_update_text, net_free);

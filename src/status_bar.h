@@ -26,3 +26,4 @@ gboolean update_status_bar(void*);
 void close_status_bar(struct status_bar*);
 
 void monitor_null_check(void* ptr, const char* monitor_name, const char* monitor_fn);
+void monitor_arg_check(const char* monitor_name, GArray* actual, const char* expected);

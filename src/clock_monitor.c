@@ -14,6 +14,8 @@
 #define MAX_TEXT_LENGTH 100
 
 void* clock_init(GArray* arguments) {
+  monitor_arg_check("clock", arguments, "()");
+
   struct clock_monitor* m = malloc(sizeof(struct clock_monitor));
 
   m->base = base_monitor_init(clock_sleep_time, clock_update_text, clock_free);

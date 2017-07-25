@@ -13,8 +13,9 @@
 #include "base_monitor.h"
 #include "thinkpad_temp_monitor.h"
 
-// thinkpad_temp_init(icon)
 void* thinkpad_temp_init(GArray* arguments) {
+  monitor_arg_check("thinkpad_temp", arguments, "(icon)");
+
   struct thinkpad_temp_monitor* m = malloc(sizeof(struct thinkpad_temp_monitor));
 
   m->base = base_monitor_init(thinkpad_temp_sleep_time, thinkpad_temp_update_text, thinkpad_temp_free);

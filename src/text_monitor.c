@@ -12,8 +12,9 @@
 #include "status_bar.h"
 #include "base_monitor.h"
 
-// text_init(text)
 void* text_init(GArray* arguments) {
+  monitor_arg_check("text", arguments, "(text)");
+
   struct text_monitor* m = malloc(sizeof(struct text_monitor));
 
   m->base = base_monitor_init(text_sleep_time, text_update_text, text_free);

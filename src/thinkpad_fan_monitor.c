@@ -12,8 +12,9 @@
 #include "base_monitor.h"
 #include "thinkpad_fan_monitor.h"
 
-// thinkpad_fan_init(icon)
 void* thinkpad_fan_init(GArray* arguments) {
+  monitor_arg_check("thinkpad_fan", arguments, "(icon)");
+
   struct thinkpad_fan_monitor* m = malloc(sizeof(struct thinkpad_fan_monitor));
 
   m->base = base_monitor_init(thinkpad_fan_sleep_time, thinkpad_fan_update_text, thinkpad_fan_free);

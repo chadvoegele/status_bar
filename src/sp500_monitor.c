@@ -12,8 +12,9 @@
 #include "sp500_monitor.h"
 #include "http_download.h"
 
-// sp500_init(icon)
 void* sp500_init(GArray* arguments) {
+  monitor_arg_check("sp500", arguments, "(icon)");
+
   struct sp500_monitor* m = malloc(sizeof(struct sp500_monitor));
 
   m->base = base_monitor_init(sp500_sleep_time, sp500_update_text, sp500_free);

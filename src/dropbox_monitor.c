@@ -14,8 +14,9 @@
 #include "base_monitor.h"
 #include "dropbox_monitor.h"
 
-// dropbox_init(icon)
 void* dropbox_init(GArray* arguments) {
+  monitor_arg_check("dropbox", arguments, "(icon)");
+
   struct dropbox_monitor* m = malloc(sizeof(struct dropbox_monitor));
 
   m->base = base_monitor_init(dropbox_sleep_time, dropbox_update_text, dropbox_free);

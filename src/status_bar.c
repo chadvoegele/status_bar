@@ -115,3 +115,30 @@ void monitor_null_check(void* ptr, const char* monitor_name, const char* monitor
     exit(EXIT_FAILURE);
   }
 }
+
+void monitor_arg_check(const char* monitor_name, GArray* actual, const char* expected) {
+  unsigned n_expected;
+  if (strcmp(expected, "()") == 0) {
+    n_expected = 0;
+  } else {
+    n_expected = 1;
+    char* c = (char*)expected;
+    while ((c = strchr(c, ',')) != NULL) {
+      n_expected = n_expected + 1;
+      c = c + 1;
+    }
+  }
+
+  if (actual->len != n_expected) {
+    fprintf(stderr, "%s expected arguments %s but received ", monitor_name, expected);
+    fprintf(stderr, "(");
+    for (size_t i = 0; i < actual->len; i++) {
+      if (i != 0) {
+        fprintf(stderr, ", ");
+      }
+      fprintf(stderr, "\"%s\"", g_array_index(actual, GString*, i)->str);
+    }
+    fprintf(stderr, ")\n");
+    exit(EXIT_FAILURE);
+  }
+}
