@@ -8,6 +8,8 @@
 #include "status_bar.h"
 #include "base_monitor.h"
 
+typedef unsigned long long bytes_t;
+
 struct net_monitor {
   struct base_monitor* base;
 
@@ -16,8 +18,8 @@ struct net_monitor {
 
   GArray* rx;
   GArray* tx;
-  int last_rx;
-  int last_tx;
+  bytes_t last_rx;
+  bytes_t last_tx;
   GString* str;
 };
 
@@ -27,4 +29,5 @@ int net_sleep_time(void*);
 void net_free(void*);
 
 void find_interfaces(GArray*, GArray*);
-int total_bytes(GArray*);
+bytes_t total_bytes(GArray*);
+void bytes_to_human_readable(bytes_t, char*, bytes_t*);

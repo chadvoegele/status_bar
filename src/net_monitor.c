@@ -42,16 +42,20 @@ gboolean net_update_text(void* ptr) {
   struct net_monitor* m = (struct net_monitor*)ptr;
   monitor_null_check(m, "net_monitor", "update");
 
-  int this_rx = total_bytes(m->rx);
-  int this_tx = total_bytes(m->tx);
+  bytes_t this_rx = total_bytes(m->rx);
+  bytes_t this_tx = total_bytes(m->tx);
 
-  int rx_speed = (this_rx - m->last_rx)/1024;
-  int tx_speed = (this_tx - m->last_tx)/1024;
+  bytes_t rx_speed_bytes = this_rx - m->last_rx;
+  bytes_t tx_speed_bytes = this_tx - m->last_tx;
 
   m->last_rx = this_rx;
   m->last_tx = this_tx;
 
-  g_string_printf(m->str, "%s%d%s%d", m->tx_icon->str, tx_speed, m->rx_icon->str, rx_speed);
+  char rx_prefix[2], tx_prefix[2];
+  bytes_t rx_speed, tx_speed;
+  bytes_to_human_readable(rx_speed_bytes, rx_prefix, &rx_speed);
+  bytes_to_human_readable(tx_speed_bytes, tx_prefix, &tx_speed);
+  g_string_printf(m->str, "%s%llu%s%s%llu%s", m->tx_icon->str, tx_speed, tx_prefix, m->rx_icon->str, rx_speed, rx_prefix);
 
   g_mutex_lock(m->base->mutex);
   m->base->text = g_string_assign(m->base->text, m->str->str);
@@ -115,16 +119,16 @@ void find_interfaces(GArray* rx, GArray* tx) {
   g_dir_close(dir);
 }
 
-int total_bytes(GArray* arr) {
+bytes_t total_bytes(GArray* arr) {
   FILE* fps;
-  int bytes;
-  int total_bytes = 0;
+  bytes_t bytes;
+  bytes_t total_bytes = 0;
   size_t i;
   for (i = 0; i < arr->len; i++) {
     char* file = g_array_index(arr, GString*, i)->str;
     fps = fopen(file, "r");
 
-    if (fps == NULL || fscanf(fps, "%d", &bytes) != 1) {
+    if (fps == NULL || fscanf(fps, "%llu", &bytes) != 1) {
       bytes = 0;
     }
 
@@ -141,4 +145,20 @@ int total_bytes(GArray* arr) {
     }
   }
   return total_bytes;
+}
+
+void bytes_to_human_readable(bytes_t bytes, char* prefix, bytes_t* speed) {
+  char prefixes[] = { 'k', 'm', 'g', 't', 'p', 'e' };
+
+  strcpy(prefix, "");
+  *speed = bytes;
+
+  char* p = prefixes;
+  while (*speed / 1024 > 0) {
+    *speed = *speed / 1024;
+    sprintf(prefix, "%c", *p);
+    if (p + 1 - prefixes < sizeof(prefixes)/sizeof(prefixes[0])) {
+      p = p + 1;
+    }
+  }
 }
