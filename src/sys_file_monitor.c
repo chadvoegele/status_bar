@@ -12,9 +12,8 @@
 #include "base_monitor.h"
 #include "sys_file_monitor.h"
 
-void* sys_file_init_config(GArray* temp_filenames,
-    int(*convert)(int), GArray* arguments) {
-  monitor_arg_check("sys_file", arguments, "(icon)");
+void* sys_file_init(GArray* arguments) {
+  monitor_arg_check("sys_file", arguments, "(icon, multiplier, varargs)");
 
   struct sys_file_monitor* m = malloc(sizeof(struct sys_file_monitor));
 
@@ -22,55 +21,58 @@ void* sys_file_init_config(GArray* temp_filenames,
 
   char* icon = g_array_index(arguments, GString*, 0)->str;
   m->icon = g_string_new(icon);
-  m->temp_filenames = temp_filenames;
-  m->convert = convert;
+
+  char* multiplier = g_array_index(arguments, GString*, 1)->str;
+  m->multiplier = atof(multiplier);
+
+  GArray* filenames = g_array_new(FALSE, FALSE, sizeof(GString*));
+  for (int i = 2; i < arguments->len; i++) {
+    GString* str = g_string_new(g_array_index(arguments, GString*, i)->str);
+    g_array_append_val(filenames, str);
+  }
+  m->filenames = filenames;
   m->str = g_string_new(NULL);
 
   return m;
-}
-
-void append_filename(GArray* filenames, char* filename) {
-  GString* filename_str = g_string_new(filename);
-  g_array_append_val(filenames, filename_str);
 }
 
 gboolean sys_file_update_text(void* ptr) {
   struct sys_file_monitor* m = (struct sys_file_monitor*)ptr;
   monitor_null_check(m, "sys_file_monitor", "update");
 
-  int n_temps = m->temp_filenames->len;
+  int n_files = m->filenames->len;
 
-  int min_temp = INT_MAX;
-  int max_temp = INT_MIN;
+  int min_val = INT_MAX;
+  int max_val = INT_MIN;
   int n_read = 0;
-  for (int i_file = 0; i_file < n_temps; i_file++) {
-    char* temp_file_path = g_array_index(m->temp_filenames, GString*, i_file)->str;
-    FILE* temp_file = fopen(temp_file_path, "r");
-    if (temp_file == NULL) {
-      fprintf(stderr, "Can't open temp file %s!\n", temp_file_path);
+  for (int i_file = 0; i_file < n_files; i_file++) {
+    char* file_path = g_array_index(m->filenames, GString*, i_file)->str;
+    FILE* file = fopen(file_path, "r");
+    if (file == NULL) {
+      fprintf(stderr, "Can't open temp file %s!\n", file_path);
       continue;
     }
 
-    int temp;
-    if (fscanf(temp_file, "%d", &temp) == 1) {
-      min_temp = temp < min_temp ? temp : min_temp;
-      max_temp = temp > max_temp ? temp : max_temp;
+    int val;
+    if (fscanf(file, "%d", &val) == 1) {
+      min_val = val < min_val ? val : min_val;
+      max_val = val > max_val ? val : max_val;
       n_read++;
     }
 
-    fclose(temp_file);
+    fclose(file);
   }
 
   m->str = g_string_set_size(m->str, 0);
-  if (n_read == n_temps) {
-    if (n_temps == 1) {
-      g_string_append_printf(m->str, "%s%d", m->icon->str, m->convert(min_temp));
+  if (n_read == n_files) {
+    if (n_files == 1) {
+      g_string_append_printf(m->str, "%s%d", m->icon->str, (int)(m->multiplier*min_val));
     } else {
-      g_string_append_printf(m->str, "%s%d%d", m->icon->str, m->convert(min_temp), m->convert(max_temp));
+      g_string_append_printf(m->str, "%s%d%d", m->icon->str, (int)(m->multiplier*min_val), (int)(m->multiplier*max_val));
     }
 
   } else {
-    g_string_append_printf(m->str, "X!");
+    g_string_append_printf(m->str, "%s!", m->icon->str);
   }
 
   g_mutex_lock(m->base->mutex);
@@ -89,10 +91,10 @@ void sys_file_free(void* ptr) {
   monitor_null_check(m, "sys_file_monitor", "free");
 
   g_string_free(m->icon, TRUE);
-  for (int i = 0; i < m->temp_filenames->len; i++) {
-    g_string_free(g_array_index(m->temp_filenames, GString*, i), TRUE);
+  for (int i = 0; i < m->filenames->len; i++) {
+    g_string_free(g_array_index(m->filenames, GString*, i), TRUE);
   }
-  g_array_free(m->temp_filenames, TRUE);
+  g_array_free(m->filenames, TRUE);
 
   g_string_free(m->str, TRUE);
 

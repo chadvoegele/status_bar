@@ -117,19 +117,22 @@ void monitor_null_check(void* ptr, const char* monitor_name, const char* monitor
 }
 
 void monitor_arg_check(const char* monitor_name, GArray* actual, const char* expected) {
-  unsigned n_expected;
-  if (strcmp(expected, "()") == 0) {
-    n_expected = 0;
-  } else {
-    n_expected = 1;
-    char* c = (char*)expected;
-    while ((c = strchr(c, ',')) != NULL) {
-      n_expected = n_expected + 1;
-      c = c + 1;
+  GArray* arguments = g_array_new(FALSE, FALSE, sizeof(GString*));
+  GScanner* scanner = g_scanner_new(NULL);
+  g_scanner_input_text(scanner, expected, strlen(expected));
+  while (g_scanner_get_next_token(scanner) != G_TOKEN_EOF) {
+    GTokenType type = g_scanner_cur_token(scanner);
+    if (type == G_TOKEN_IDENTIFIER) {
+      GString* arg = g_string_new_len(NULL, 100);
+      g_string_assign(arg, g_scanner_cur_value(scanner).v_identifier);
+      g_array_append_val(arguments, arg);
     }
   }
 
-  if (actual->len != n_expected) {
+  if (!(actual->len == arguments->len
+      || (arguments->len > 0
+          && strcmp(g_array_index(arguments, GString*, arguments->len-1)->str, "varargs") == 0
+          && actual->len >= arguments->len))) {
     fprintf(stderr, "%s expected arguments %s but received ", monitor_name, expected);
     fprintf(stderr, "(");
     for (size_t i = 0; i < actual->len; i++) {
@@ -141,4 +144,10 @@ void monitor_arg_check(const char* monitor_name, GArray* actual, const char* exp
     fprintf(stderr, ")\n");
     exit(EXIT_FAILURE);
   }
+
+  g_scanner_destroy(scanner);
+  for (int i = 0; i < arguments->len; i++) {
+    g_string_free(g_array_index(arguments, GString*, i), TRUE);
+  }
+  g_array_free(arguments, TRUE);
 }

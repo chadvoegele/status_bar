@@ -19,16 +19,12 @@
 #include "dropbox_monitor.h"
 #include "sp500_monitor.h"
 #include "weather_monitor.h"
-#include "core_temp_monitor.h"
-#include "it87_temp_monitor.h"
-#include "it87_fan_monitor.h"
-#include "nct6775_temp_monitor.h"
-#include "nct6775_fan_monitor.h"
 #include "volume_monitor.h"
 #include "nginx_monitor.h"
 #include "cpu_usage_monitor.h"
 #include "users_monitor.h"
 #include "text_monitor.h"
+#include "sys_file_monitor.h"
 
 error_t parse_opt(int key, char *arg, struct argp_state *state) {
   char** config_file_ptr = (char**)state->input;
@@ -161,16 +157,6 @@ void* convert_string_to_monitor(char* str, GArray* arguments) {
     return thinkpad_temp_init(arguments);
   } else if (strcmp("weather", str) == 0) {
     return weather_init(arguments);
-  } else if (strcmp("core_temp", str) == 0) {
-    return core_temp_init(arguments);
-  } else if (strcmp("it87_temp", str) == 0) {
-    return it87_temp_init(arguments);
-  } else if (strcmp("it87_fan", str) == 0) {
-    return it87_fan_init(arguments);
-  } else if (strcmp("nct6775_temp", str) == 0) {
-    return nct6775_temp_init(arguments);
-  } else if (strcmp("nct6775_fan", str) == 0) {
-    return nct6775_fan_init(arguments);
   } else if (strcmp("volume", str) == 0) {
     return volume_init(arguments);
   } else if (strcmp("nginx", str) == 0) {
@@ -181,6 +167,8 @@ void* convert_string_to_monitor(char* str, GArray* arguments) {
     return users_init(arguments);
   } else if (strcmp("text", str) == 0) {
     return text_init(arguments);
+  } else if (strcmp("sys_file", str) == 0) {
+    return sys_file_init(arguments);
   } else {
     fprintf(stderr, "Monitor %s not found.\n", str);
     exit(EXIT_FAILURE);
