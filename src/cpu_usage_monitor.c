@@ -76,7 +76,7 @@ gboolean cpu_usage_update_text(void* ptr) {
   m->str = g_string_set_size(m->str, 0);
 
   if (n_read == N_TIMES) {
-    g_string_append_printf(m->str, "%s%d%%", m->icon->str, (int)(100*usage_pct));
+    g_string_append_printf(m->str, "%s%3d%%", m->icon->str, (int)(100*usage_pct));
 
   } else {
     g_string_append_printf(m->str, "%s!", m->icon->str);

@@ -55,7 +55,7 @@ gboolean net_update_text(void* ptr) {
   bytes_t rx_speed, tx_speed;
   bytes_to_human_readable(rx_speed_bytes, rx_prefix, &rx_speed);
   bytes_to_human_readable(tx_speed_bytes, tx_prefix, &tx_speed);
-  g_string_printf(m->str, "%s%llu%s%s%llu%s", m->tx_icon->str, tx_speed, tx_prefix, m->rx_icon->str, rx_speed, rx_prefix);
+  g_string_printf(m->str, "%s%3llu%s%s%3llu%s", m->tx_icon->str, tx_speed, tx_prefix, m->rx_icon->str, rx_speed, rx_prefix);
 
   g_mutex_lock(m->base->mutex);
   m->base->text = g_string_assign(m->base->text, m->str->str);
@@ -150,7 +150,7 @@ bytes_t total_bytes(GArray* arr) {
 void bytes_to_human_readable(bytes_t bytes, char* prefix, bytes_t* speed) {
   char prefixes[] = { 'k', 'm', 'g', 't', 'p', 'e' };
 
-  strcpy(prefix, "");
+  strcpy(prefix, " ");
   *speed = bytes;
 
   char* p = prefixes;
