@@ -22,10 +22,6 @@ void* sp500_init(GArray* arguments) {
   char* icon = g_array_index(arguments, GString*, 0)->str;
   m->icon = g_string_new(icon);
 
-  m->request_str = g_string_new(NULL);
-  g_string_printf(m->request_str,
-      "http://download.finance.yahoo.com/d/quotes.csv?s=%%5EGSPC&f=l1c");
-
   m->res = g_string_new(NULL);
   m->curl = curl_easy_init();
 
@@ -39,10 +35,8 @@ gboolean sp500_update_text(void* ptr) {
   struct sp500_monitor* m = (struct sp500_monitor*)ptr;
   monitor_null_check(m, "sp500_monitor", "update");
 
-  CURLcode code = download_data(m->curl, m->request_str->str, m->res);
   char* output;
-
-  if (code == CURLE_OK && format_price(m->res, m->icon) != -1) {
+  if (!format_price(m->curl, m->res, m->icon)) {
     output = m->res->str;
   } else {
     output = m->err;
@@ -56,7 +50,7 @@ gboolean sp500_update_text(void* ptr) {
 }
 
 int sp500_sleep_time(void* ptr) {
-  return 60;
+  return 300;
 }
 
 void sp500_free(void* ptr) {
@@ -67,7 +61,6 @@ void sp500_free(void* ptr) {
 
   free(m->err);
   g_string_free(m->res, TRUE);
-  g_string_free(m->request_str, TRUE);
   curl_easy_cleanup(m->curl);
 
   base_monitor_free(m->base);
@@ -75,21 +68,43 @@ void sp500_free(void* ptr) {
   free(m);
 }
 
-int format_price(GString* res, GString* icon) {
-  int code = -1;
+int format_price(CURL* curl, GString* res, GString* icon) {
+  GString* quote = g_string_new(NULL);
+  char* quote_request = "https://api.iextrading.com/1.0/stock/spy/quote?displayPercent=true";
+  CURLcode quote_code = download_data(curl, quote_request, quote);
 
-  char* buf1 = malloc(strlen(res->str)*sizeof(char));
-  char* buf2 = malloc(strlen(res->str)*sizeof(char));
-
-  int nread = sscanf(res->str, "%[0-9.],%*s - %[+-0-9.]", buf1, buf2);
-
-  if (nread == 2) {
-    g_string_printf(res, "%s%s (%s%%)", icon->str, buf1, buf2);
-    code = 0;
+  if (quote_code != CURLE_OK) {
+    return -1;
   }
 
-  free(buf1);
-  free(buf2);
+  float close;
+  float change_percent;
 
-  return code;
+  char* close_key = "\"close\":";
+  char* close_start = strstr(quote->str, close_key);
+  if (close_start == NULL) {
+    return -1;
+  }
+
+  int nread_close = sscanf(close_start + strlen(close_key), "%f", &close);
+  if (nread_close == 0) {
+    return -1;
+  }
+
+  char* change_key = "\"changePercent\":";
+  char* change_start = strstr(quote->str, change_key);
+  if (change_start == NULL) {
+    return -1;
+  }
+
+  int nread_change = sscanf(change_start + strlen(change_key), "%f", &change_percent);
+  if (nread_change == 0) {
+    return -1;
+  }
+
+  g_string_printf(res, "%s%.2f (%.2f%%)", icon->str, close, change_percent);
+
+  g_string_free(quote, TRUE);
+
+  return 0;
 }
