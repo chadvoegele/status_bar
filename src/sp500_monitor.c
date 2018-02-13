@@ -77,17 +77,17 @@ int format_price(CURL* curl, GString* res, GString* icon) {
     return -1;
   }
 
-  float close;
+  float price;
   float change_percent;
 
-  char* close_key = "\"close\":";
-  char* close_start = strstr(quote->str, close_key);
-  if (close_start == NULL) {
+  char* price_key = "\"latestPrice\":";
+  char* price_start = strstr(quote->str, price_key);
+  if (price_start == NULL) {
     return -1;
   }
 
-  int nread_close = sscanf(close_start + strlen(close_key), "%f", &close);
-  if (nread_close == 0) {
+  int nread_price = sscanf(price_start + strlen(price_key), "%f", &price);
+  if (nread_price == 0) {
     return -1;
   }
 
@@ -102,7 +102,7 @@ int format_price(CURL* curl, GString* res, GString* icon) {
     return -1;
   }
 
-  g_string_printf(res, "%s%.2f (%.2f%%)", icon->str, close, change_percent);
+  g_string_printf(res, "%s%.2f (%.2f%%)", icon->str, price, change_percent);
 
   g_string_free(quote, TRUE);
 
