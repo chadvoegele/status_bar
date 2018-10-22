@@ -170,21 +170,21 @@ void format_response(GString* response, GString* icon) {
 
 void format_status(char* word) {
   if (strstr(word, "Up to date") != NULL) {
-    strcpy(word, "");
+    strcpy(word, "");
   } else if (strstr(word, "Downloading file list")) {
-    strcpy(word, "");
+    strcpy(word, "");
   } else if (strstr(word, "Uploading")) {
-    strcpy(word, "");
+    strcpy(word, "");
   } else if (strstr(word, "Downloading")) {
-    strcpy(word, "");
+    strcpy(word, "");
   } else if (strstr(word, "Indexing")) {
-    strcpy(word, "");
+    strcpy(word, "");
   } else if (strstr(word, "Starting")) {
-    strcpy(word, "");
+    strcpy(word, "");
   } else if (strstr(word, "Connecting")) {
-    strcpy(word, "");
+    strcpy(word, "");
   } else if (strstr(word, "Syncing")) {
-    strcpy(word, "");
+    strcpy(word, "");
   } else {
     fprintf(stderr, "Unable to parse: %s\n", word);
     strcpy(word, "?");
