@@ -68,7 +68,7 @@ gboolean sys_file_update_text(void* ptr) {
     if (n_files == 1) {
       g_string_append_printf(m->str, "%s%d", m->icon->str, (int)(m->multiplier*min_val));
     } else {
-      g_string_append_printf(m->str, "%s%d%d", m->icon->str, (int)(m->multiplier*min_val), (int)(m->multiplier*max_val));
+      g_string_append_printf(m->str, "%s%d%d", m->icon->str, (int)(m->multiplier*min_val), (int)(m->multiplier*max_val));
     }
 
   } else {
