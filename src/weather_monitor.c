@@ -27,7 +27,7 @@ void* weather_init(GArray* arguments) {
   char* weather_loc = g_array_index(arguments, GString*, 1)->str;
 
   m->request_str = g_string_new(NULL);
-  g_string_printf(m->request_str, "http://w1.weather.gov/xml/current_obs/%s.xml", weather_loc);
+  g_string_printf(m->request_str, "https://w1.weather.gov/xml/current_obs/%s.xml", weather_loc);
 
   m->res = g_string_new(NULL);
   m->curl = curl_easy_init();
