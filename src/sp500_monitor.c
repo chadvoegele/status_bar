@@ -69,8 +69,20 @@ void sp500_free(void* ptr) {
 }
 
 int format_price(CURL* curl, GString* res, GString* icon) {
+  char* apikey = getenv("STATUS_BAR_SP500_APIKEY");
+  if (apikey == NULL) {
+    fprintf(stderr, "No apikey found in environment variable STATUS_BAR_SP500_APIKEY\n");
+    return -1;
+  }
+
+  const char* url = "https://www.alphavantage.co/query?function=GLOBAL_QUOTE&symbol=^gspc&apikey=%s";
+  char* quote_request = malloc(sizeof(char*)*(strlen(url)+strlen(apikey)));
+  int quote_request_ret = sprintf(quote_request, url, apikey);
+  if (quote_request_ret < 0) {
+    return -1;
+  }
+
   GString* quote = g_string_new(NULL);
-  char* quote_request = "https://api.iextrading.com/1.0/stock/spy/quote?displayPercent=true";
   CURLcode quote_code = download_data(curl, quote_request, quote);
 
   if (quote_code != CURLE_OK) {
@@ -80,30 +92,31 @@ int format_price(CURL* curl, GString* res, GString* icon) {
   float price;
   float change_percent;
 
-  char* price_key = "\"latestPrice\":";
+  char* price_key = "\"05. price\":";
   char* price_start = strstr(quote->str, price_key);
   if (price_start == NULL) {
     return -1;
   }
 
-  int nread_price = sscanf(price_start + strlen(price_key), "%f", &price);
+  int nread_price = sscanf(price_start + strlen(price_key), " \"%f\"", &price);
   if (nread_price == 0) {
     return -1;
   }
 
-  char* change_key = "\"changePercent\":";
+  char* change_key = "\"10. change percent\":";
   char* change_start = strstr(quote->str, change_key);
   if (change_start == NULL) {
     return -1;
   }
 
-  int nread_change = sscanf(change_start + strlen(change_key), "%f", &change_percent);
+  int nread_change = sscanf(change_start + strlen(change_key), " \"%f%%\"", &change_percent);
   if (nread_change == 0) {
     return -1;
   }
 
   g_string_printf(res, "%s%.2f (%.2f%%)", icon->str, price, change_percent);
 
+  free(quote_request);
   g_string_free(quote, TRUE);
 
   return 0;
