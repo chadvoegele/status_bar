@@ -75,7 +75,7 @@ int format_price(CURL* curl, GString* res, GString* icon) {
     return -1;
   }
 
-  const char* url = "https://www.alphavantage.co/query?function=GLOBAL_QUOTE&symbol=^gspc&apikey=%s";
+  const char* url = "https://www.alphavantage.co/query?function=GLOBAL_QUOTE&symbol=SPY&apikey=%s";
   char* quote_request = malloc(sizeof(char*)*(strlen(url)+strlen(apikey)));
   int quote_request_ret = sprintf(quote_request, url, apikey);
   if (quote_request_ret < 0) {
