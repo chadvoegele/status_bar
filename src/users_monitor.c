@@ -45,9 +45,7 @@ gboolean users_update_text(void* ptr) {
 
   g_string_printf(m->str, "%s%d", m->icon->str, nusers);
 
-  g_mutex_lock(m->base->mutex);
   m->base->text = g_string_assign(m->base->text, m->str->str);
-  g_mutex_unlock(m->base->mutex);
 
   return TRUE;
 }

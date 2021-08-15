@@ -88,9 +88,7 @@ gboolean battery_update_text(void* ptr) {
   if (battery_full_file != NULL)
     fclose(battery_full_file);
 
-  g_mutex_lock(m->base->mutex);
   m->base->text = g_string_assign(m->base->text, m->str->str);
-  g_mutex_unlock(m->base->mutex);
 
   return TRUE;
 }

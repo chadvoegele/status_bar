@@ -79,9 +79,7 @@ gboolean dropbox_update_text(void* ptr) {
     }
   }
 
-  g_mutex_lock(m->base->mutex);
   m->base->text = g_string_assign(m->base->text, output);
-  g_mutex_unlock(m->base->mutex);
 
   return TRUE;
 }

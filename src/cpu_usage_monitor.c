@@ -86,9 +86,7 @@ gboolean cpu_usage_update_text(void* ptr) {
     fclose(time_file);
   }
 
-  g_mutex_lock(m->base->mutex);
   m->base->text = g_string_assign(m->base->text, m->str->str);
-  g_mutex_unlock(m->base->mutex);
 
   return TRUE;
 }

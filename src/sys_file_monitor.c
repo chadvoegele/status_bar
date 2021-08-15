@@ -75,9 +75,7 @@ gboolean sys_file_update_text(void* ptr) {
     g_string_append_printf(m->str, "%s!", m->icon->str);
   }
 
-  g_mutex_lock(m->base->mutex);
   m->base->text = g_string_assign(m->base->text, m->str->str);
-  g_mutex_unlock(m->base->mutex);
 
   return TRUE;
 }

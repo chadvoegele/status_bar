@@ -57,9 +57,7 @@ gboolean net_update_text(void* ptr) {
   bytes_to_human_readable(tx_speed_bytes, tx_prefix, &tx_speed);
   g_string_printf(m->str, "%s%3llu%s%s%3llu%s", m->tx_icon->str, tx_speed, tx_prefix, m->rx_icon->str, rx_speed, rx_prefix);
 
-  g_mutex_lock(m->base->mutex);
   m->base->text = g_string_assign(m->base->text, m->str->str);
-  g_mutex_unlock(m->base->mutex);
 
   return TRUE;
 }

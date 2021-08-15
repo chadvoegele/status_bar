@@ -71,9 +71,7 @@ gboolean thinkpad_temp_update_text(void* ptr) {
   if (temp_file != NULL)
     fclose(temp_file);
 
-  g_mutex_lock(m->base->mutex);
   m->base->text = g_string_assign(m->base->text, m->str->str);
-  g_mutex_unlock(m->base->mutex);
 
   return TRUE;
 }

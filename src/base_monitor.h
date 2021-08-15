@@ -17,7 +17,6 @@ struct base_monitor {
   void (*free)(void*);
 
   GString* text;
-  GMutex* mutex;
 };
 
 struct base_monitor* base_monitor_init(int (*sleep_time)(void*), gboolean (*update_text)(void*), void (*free)(void*));

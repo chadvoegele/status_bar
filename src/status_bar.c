@@ -82,9 +82,7 @@ gboolean update_status_bar(void* ptr) {
     void* m = status_bar->monitors[i];
     struct base_monitor* bm = ((struct base_monitor_base*)m)->base;
 
-    g_mutex_lock(bm->mutex);
     g_string_append_printf(output, "%s", bm->text->str);
-    g_mutex_unlock(bm->mutex);
   }
 
   fprintf(status_bar->display_pipe, "%s\n", output->str);

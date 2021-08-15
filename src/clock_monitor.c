@@ -44,9 +44,7 @@ gboolean clock_update_text(void* ptr) {
   m->colon_on = !m->colon_on;
   strftime(m->str, MAX_TEXT_LENGTH, format_str, &timeinfo);
 
-  g_mutex_lock(m->base->mutex);
   m->base->text = g_string_assign(m->base->text, m->str);
-  g_mutex_unlock(m->base->mutex);
 
   return TRUE;
 }

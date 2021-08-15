@@ -12,9 +12,6 @@ struct base_monitor* base_monitor_init(int (*sleep_time)(void*), gboolean (*upda
   m->sleep_time = sleep_time;
   m->update_text = update_text;
   m->free = free;
-
-  m->mutex = malloc(sizeof(GMutex));
-  g_mutex_init(m->mutex);
   m->text = g_string_new(NULL);
 
   return m;
@@ -22,7 +19,5 @@ struct base_monitor* base_monitor_init(int (*sleep_time)(void*), gboolean (*upda
 
 void base_monitor_free(struct base_monitor* m) {
   g_string_free(m->text, TRUE);
-  g_mutex_clear(m->mutex);
-  free(m->mutex);
   free(m);
 }
