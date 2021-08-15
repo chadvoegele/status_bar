@@ -77,7 +77,7 @@ void nginx_free(void* ptr) {
 }
 
 int format_nginx_status(GString* res, GString* icon) {
-  int code = 0;
+  int code = -1;
 
   int active;
   GString* output = g_string_new(icon->str);
@@ -92,8 +92,7 @@ int format_nginx_status(GString* res, GString* icon) {
       int nread = sscanf(*word, "Active connections: %d", &active);
       if (nread == 1) {
         g_string_append_printf(output, "%d", active);
-      } else {
-        code = -1;
+        code = 0;
       }
     }
 
