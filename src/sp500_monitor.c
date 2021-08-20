@@ -22,27 +22,51 @@ void* sp500_init(GArray* arguments) {
   char* icon = g_array_index(arguments, GString*, 0)->str;
   m->icon = g_string_new(icon);
 
-  m->res = g_string_new(NULL);
-  m->curl = curl_easy_init();
+  m->url = build_url();
+  m->http_data = http_init();
 
   m->err = malloc((strlen(m->icon->str) + 2)*sizeof(char));
   sprintf(m->err, "%s!", m->icon->str);
 
+  g_string_printf(m->base->text, "%s", m->icon->str);
+
   return m;
+}
+
+void sp500_result_callback(CURLcode code, void* userdata) {
+  struct sp500_monitor* m = (struct sp500_monitor*)userdata;
+
+  if (code != CURLE_OK) {
+      m->base->text = g_string_assign(m->base->text, m->err);
+  }
+}
+
+size_t sp500_http_callback(char* ptr, size_t size, size_t nmemb, void* userdata) {
+  struct sp500_monitor* m = (struct sp500_monitor*)userdata;
+
+  char* output;
+  GString* res = g_string_new(NULL);
+  if (!format_price(res, ptr, m->icon)) {
+    output = res->str;
+  } else {
+    output = m->err;
+  }
+
+  m->base->text = g_string_assign(m->base->text, output);
+  g_string_free(res, TRUE);
+  return size*nmemb;
 }
 
 gboolean sp500_update_text(void* ptr) {
   struct sp500_monitor* m = (struct sp500_monitor*)ptr;
   monitor_null_check(m, "sp500_monitor", "update");
 
-  char* output;
-  if (!format_price(m->curl, m->res, m->icon)) {
-    output = m->res->str;
-  } else {
-    output = m->err;
+  if (m->url == NULL) {
+    m->base->text = g_string_assign(m->base->text, m->err);
+    return TRUE;
   }
 
-  m->base->text = g_string_assign(m->base->text, output);
+  download_data(m->http_data, m->url->str, sp500_http_callback, m, sp500_result_callback);
 
   return TRUE;
 }
@@ -58,40 +82,35 @@ void sp500_free(void* ptr) {
   g_string_free(m->icon, TRUE);
 
   free(m->err);
-  g_string_free(m->res, TRUE);
-  curl_easy_cleanup(m->curl);
+  if (m->url != NULL) {
+    g_string_free(m->url, TRUE);
+  }
+  http_free(m->http_data);
 
   base_monitor_free(m->base);
 
   free(m);
 }
 
-int format_price(CURL* curl, GString* res, GString* icon) {
+GString* build_url() {
   char* apikey = getenv("STATUS_BAR_SP500_APIKEY");
   if (apikey == NULL) {
     fprintf(stderr, "No apikey found in environment variable STATUS_BAR_SP500_APIKEY\n");
-    return -1;
+    return NULL;
   }
 
-  const char* url = "https://www.alphavantage.co/query?function=GLOBAL_QUOTE&symbol=SPY&apikey=%s";
-  char* quote_request = malloc(sizeof(char*)*(strlen(url)+strlen(apikey)));
-  int quote_request_ret = sprintf(quote_request, url, apikey);
-  if (quote_request_ret < 0) {
-    return -1;
-  }
+  GString* url = g_string_new(NULL);
+  const char* url_format = "https://www.alphavantage.co/query?function=GLOBAL_QUOTE&symbol=SPY&apikey=%s";
+  g_string_printf(url, url_format, apikey);
+  return url;
+}
 
-  GString* quote = g_string_new(NULL);
-  CURLcode quote_code = download_data(curl, quote_request, quote);
-
-  if (quote_code != CURLE_OK) {
-    return -1;
-  }
-
+int format_price(GString* res, char* quote, GString* icon) {
   float price;
   float change_percent;
 
   char* price_key = "\"05. price\":";
-  char* price_start = strstr(quote->str, price_key);
+  char* price_start = strstr(quote, price_key);
   if (price_start == NULL) {
     return -1;
   }
@@ -102,7 +121,7 @@ int format_price(CURL* curl, GString* res, GString* icon) {
   }
 
   char* change_key = "\"10. change percent\":";
-  char* change_start = strstr(quote->str, change_key);
+  char* change_start = strstr(quote, change_key);
   if (change_start == NULL) {
     return -1;
   }
@@ -113,9 +132,6 @@ int format_price(CURL* curl, GString* res, GString* icon) {
   }
 
   g_string_printf(res, "%s%.2f (%.2f%%)", icon->str, price, change_percent);
-
-  free(quote_request);
-  g_string_free(quote, TRUE);
 
   return 0;
 }

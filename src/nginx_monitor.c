@@ -28,28 +28,46 @@ void* nginx_init(GArray* arguments) {
   m->request_str = g_string_new(status_uri);
 
   m->res = g_string_new(NULL);
-  m->curl = curl_easy_init();
+  m->http_data = http_init();
 
   m->err = malloc((strlen(m->icon->str) + 2)*sizeof(char));
   sprintf(m->err, "%s!", m->icon->str);
 
+  g_string_printf(m->base->text, "%s", m->icon->str);
+
   return m;
+}
+
+void nginx_result_callback(CURLcode code, void* userdata) {
+  struct nginx_monitor* m = (struct nginx_monitor*)userdata;
+
+  if (code != CURLE_OK) {
+      m->base->text = g_string_assign(m->base->text, m->err);
+  }
+}
+
+size_t nginx_http_callback(char* ptr, size_t size, size_t nmemb, void* userdata) {
+  struct nginx_monitor* m = (struct nginx_monitor*)userdata;
+
+  g_string_set_size(m->res, 0);
+  m->res = g_string_append_len(m->res, ptr, size*nmemb);
+
+  char* output;
+  if (format_nginx_status(m->res, m->icon) != -1) {
+    output = m->res->str;
+    m->base->text = g_string_assign(m->base->text, output);
+  } else {
+    output = m->err;
+  }
+
+  return size*nmemb;
 }
 
 gboolean nginx_update_text(void* ptr) {
   struct nginx_monitor* m = (struct nginx_monitor*)ptr;
   monitor_null_check(m, "nginx_monitor", "update");
 
-  CURLcode code = download_data(m->curl, m->request_str->str, m->res);
-  char* output;
-
-  if (code == CURLE_OK && format_nginx_status(m->res, m->icon) != -1) {
-    output = m->res->str;
-  } else {
-    output = m->err;
-  }
-
-  m->base->text = g_string_assign(m->base->text, output);
+  download_data(m->http_data, m->request_str->str, nginx_http_callback, m, nginx_result_callback);
 
   return TRUE;
 }
@@ -67,7 +85,7 @@ void nginx_free(void* ptr) {
 
   free(m->err);
   g_string_free(m->res, TRUE);
-  curl_easy_cleanup(m->curl);
+  http_free(m->http_data);
 
   base_monitor_free(m->base);
 

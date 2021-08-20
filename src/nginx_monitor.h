@@ -18,7 +18,7 @@ struct nginx_monitor {
 
   char* err;
   GString* res;
-  CURL* curl;
+  struct http_data* http_data;
 };
 
 void* nginx_init(GArray*);

@@ -6,10 +6,10 @@
 #pragma once
 
 #include <glib.h>
-#include <curl/curl.h>
 
 #include "status_bar.h"
 #include "base_monitor.h"
+#include "http_download.h"
 
 struct weather_monitor {
   struct base_monitor* base;
@@ -19,7 +19,7 @@ struct weather_monitor {
   GString* res;
   char* err;
   GString* request_str;
-  CURL* curl;
+  struct http_data* http_data;
 };
 
 void* weather_init(GArray*);

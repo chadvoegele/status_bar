@@ -5,5 +5,11 @@
 
 #pragma once
 
-CURLcode download_data(CURL*, char*, GString*);
-size_t writefunc(void*, size_t, size_t, GString*);
+struct http_data {
+  guint id;
+  CURLM* curl;
+};
+
+gpointer http_init();
+void http_free(struct http_data*);
+CURLcode download_data(struct http_data*, char*, void*, void*, void*);

@@ -16,13 +16,14 @@ struct sp500_monitor {
   GString* icon;
 
   char* err;
-  GString* res;
-  CURL* curl;
+  GString* url;
+  struct http_data* http_data;
 };
 
+GString* build_url();
 void* sp500_init(GArray*);
 gboolean sp500_update_text(void*);
 int sp500_sleep_time(void*);
 void sp500_free(void*);
 
-int format_price(CURL*, GString*, GString*);
+int format_price(GString*, char*, GString*);

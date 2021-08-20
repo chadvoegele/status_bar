@@ -30,29 +30,46 @@ void* weather_init(GArray* arguments) {
   g_string_printf(m->request_str, "https://w1.weather.gov/xml/current_obs/%s.xml", weather_loc);
 
   m->res = g_string_new(NULL);
-  m->curl = curl_easy_init();
+  m->http_data = http_init();
 
   m->err = malloc((strlen(m->icon->str) + 2)*sizeof(char));
   sprintf(m->err, "%s!", m->icon->str);
 
+  g_string_printf(m->base->text, "%s", m->icon->str);
+
   return m;
 }
 
-gboolean weather_update_text(void* ptr) {
-  struct weather_monitor* m = (struct weather_monitor*)ptr;
-  monitor_null_check(m, "weather_monitor", "update");
+void weather_result_callback(CURLcode code, void* userdata) {
+  struct weather_monitor* m = (struct weather_monitor*)userdata;
+
+  if (code != CURLE_OK) {
+      m->base->text = g_string_assign(m->base->text, m->err);
+  }
+}
+
+size_t weather_http_callback(char* ptr, size_t size, size_t nmemb, void* userdata) {
+  struct weather_monitor* m = (struct weather_monitor*)userdata;
+
+  g_string_set_size(m->res, 0);
+  m->res = g_string_append_len(m->res, ptr, size*nmemb);
 
   char* output;
-
-  CURLcode code = download_data(m->curl, m->request_str->str, m->res);
-
-  if (code == CURLE_OK && format_output(m->res, m->icon) != -1) {
+  if (format_output(m->res, m->icon) != -1) {
     output = m->res->str;
   } else {
     output = m->err;
   }
 
   m->base->text = g_string_assign(m->base->text, output);
+  return size*nmemb;
+}
+
+gboolean weather_update_text(void* ptr) {
+  struct weather_monitor* m = (struct weather_monitor*)ptr;
+  monitor_null_check(m, "weather_monitor", "update");
+
+  download_data(m->http_data, m->request_str->str, weather_http_callback, m, weather_result_callback);
 
   return TRUE;
 }
@@ -68,7 +85,7 @@ void weather_free(void* ptr) {
   free(m->err);
   g_string_free(m->res, TRUE);
   g_string_free(m->request_str, TRUE);
-  curl_easy_cleanup(m->curl);
+  http_free(m->http_data);
 
   g_string_free(m->icon, TRUE);
 
