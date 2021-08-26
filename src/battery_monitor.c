@@ -73,7 +73,7 @@ gboolean battery_update_text(void* ptr) {
   if (n_full == 1 && n_now == 1) {
     int battpct = (int)(100.0*now/full);
     if (battpct <= 10) {
-      g_string_printf(m->str, "%%{B%s}%%{F%s}%s%d%%%%{B-}%%{F-}",
+      g_string_printf(m->str, "<span background=\"%s\" foreground=\"%s\">%s%d%%</span>",
           m->alert_bgcolor->str, m->alert_fgcolor->str, m->battery_empty_icon->str, battpct);
     } else {
       g_string_printf(m->str, "%s%d%%", m->battery_full_icon->str, battpct);
