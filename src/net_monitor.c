@@ -152,11 +152,11 @@ void bytes_to_human_readable(bytes_t bytes, char* prefix, bytes_t* speed) {
   *speed = bytes;
 
   char* p = prefixes;
-  while (*speed / 1000 > 0) {
+  do {
     *speed = *speed / 1024;
     sprintf(prefix, "%c", *p);
     if (p + 1 - prefixes < sizeof(prefixes)/sizeof(prefixes[0])) {
       p = p + 1;
     }
-  }
+  } while (*speed / 1000 > 0);
 }
