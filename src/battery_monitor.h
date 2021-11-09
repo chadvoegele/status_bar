@@ -13,12 +13,14 @@ struct battery_monitor {
 
   GString* battery_full_icon;
   GString* battery_empty_icon;
+  GString* battery_charging_icon;
   GString* alert_fgcolor;
   GString* alert_bgcolor;
 
   GString* str;
   GString* battery_full_path_str;
   GString* battery_now_path_str;
+  GString* battery_status_path_str;
 };
 
 void* battery_init(GArray*);
