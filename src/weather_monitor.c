@@ -15,7 +15,7 @@
 #include "configs.h"
 
 void* weather_init(GArray* arguments) {
-  monitor_arg_check("weather", arguments, "(icon, location_key)");
+  monitor_arg_check("weather", arguments, "(icon, location_key, sun_icon, cloudy_icon, rain_icon, storm_icon, snow_icon)");
 
   struct weather_monitor* m = malloc(sizeof(struct weather_monitor));
 
@@ -28,6 +28,12 @@ void* weather_init(GArray* arguments) {
 
   m->request_str = g_string_new(NULL);
   g_string_printf(m->request_str, "https://w1.weather.gov/xml/current_obs/%s.xml", weather_loc);
+
+  m->sun_icon = g_string_new(g_array_index(arguments, GString*, 2)->str);
+  m->cloudy_icon = g_string_new(g_array_index(arguments, GString*, 3)->str);
+  m->rain_icon = g_string_new(g_array_index(arguments, GString*, 4)->str);
+  m->storm_icon = g_string_new(g_array_index(arguments, GString*, 5)->str);
+  m->snow_icon = g_string_new(g_array_index(arguments, GString*, 6)->str);
 
   m->res = g_string_new(NULL);
   m->http_data = http_init();
@@ -55,7 +61,7 @@ size_t weather_http_callback(char* ptr, size_t size, size_t nmemb, void* userdat
   m->res = g_string_append_len(m->res, ptr, size*nmemb);
 
   char* output;
-  if (format_output(m->res, m->icon) != -1) {
+  if (format_output(m, m->res) != -1) {
     output = m->res->str;
   } else {
     output = m->err;
@@ -69,7 +75,7 @@ gboolean weather_update_text(void* ptr) {
   struct weather_monitor* m = (struct weather_monitor*)ptr;
   monitor_null_check(m, "weather_monitor", "update");
 
-  download_data(m->http_data, m->request_str->str, weather_http_callback, m, weather_result_callback);
+  download_data(m->http_data, m->request_str->str, NULL, weather_http_callback, m, weather_result_callback);
 
   return TRUE;
 }
@@ -88,14 +94,19 @@ void weather_free(void* ptr) {
   http_free(m->http_data);
 
   g_string_free(m->icon, TRUE);
+  g_string_free(m->sun_icon, TRUE);
+  g_string_free(m->cloudy_icon, TRUE);
+  g_string_free(m->rain_icon, TRUE);
+  g_string_free(m->storm_icon, TRUE);
+  g_string_free(m->snow_icon, TRUE);
 
   base_monitor_free(m->base);
 
   free(m);
 }
 
-int format_output(GString* res, GString* icon) {
-  int code = -1;
+int format_output(struct weather_monitor* m, GString* res) {
+  int return_code = -1;
   int weather_code = -1;
   int temp_code = -1;
 
@@ -123,18 +134,52 @@ int format_output(GString* res, GString* icon) {
   if (temp_str != NULL && weather_str != NULL
       && temp_code == 0 && weather_code == 0) {
     res = g_string_truncate(res, 0);
-    res = g_string_append(res, icon->str);
+    res = g_string_append(res, m->icon->str);
     res = g_string_append(res, temp_str);
-    res = g_string_append(res, ", ");
-    res = g_string_append(res, weather_str);
-    code = 0;
+    res = g_string_append(res, " ");
+    res = g_string_append(res, convert_weather_text_to_icon(m, weather_str));
+    return_code = 0;
   }
 
   free(weather_str);
   free(temp_str);
   g_strfreev(words);
 
-  return code;
+  return return_code;
+}
+
+char* convert_weather_text_to_icon(struct weather_monitor* m, char* weather_text) {
+  char* lower_weather_text = strlower(weather_text);
+  if (strstr(lower_weather_text, "storm")) {
+    return m->storm_icon->str;
+  }
+
+  if (strstr(lower_weather_text, "snow")) {
+    return m->snow_icon->str;
+  }
+
+  if (strstr(lower_weather_text, "rain")) {
+    return m->rain_icon->str;
+  }
+
+  if (strstr(lower_weather_text, "cloudy")) {
+    return m->cloudy_icon->str;
+  }
+
+  if (strstr(lower_weather_text, "sun") || strstr(lower_weather_text, "fair")) {
+    return m->sun_icon->str;
+  }
+
+  return "?";
+}
+
+char* strlower(char* str) {
+  char* start = str;
+  while (*str != '\0') {
+    *str = tolower(*str);
+    str++;
+  }
+  return start;
 }
 
 int parse_xml_str(char* str, const char* start_tag, const char* end_tag) {
