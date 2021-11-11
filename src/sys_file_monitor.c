@@ -1,4 +1,4 @@
-/** Copyright 2015-2017 Chad Voegele.
+/** Copyright 2015-2021 Chad Voegele.
 * See LICENSE file for license details.
 */
 
