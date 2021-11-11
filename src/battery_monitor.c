@@ -46,6 +46,8 @@ void* battery_init(GArray* arguments) {
 
   m->str = g_string_new(NULL);
 
+  m->last_now = -1;
+
   return m;
 }
 
@@ -102,9 +104,19 @@ gboolean battery_update_text(void* ptr) {
     } else {
       g_string_printf(m->str, "%s%d%%", m->battery_full_icon->str, battpct);
     }
+
+    if (m->last_now != -1) {
+      int rate = (now - m->last_now)/1000;
+      g_string_append_printf(m->str, " %+dmA", rate);
+    } else {
+      g_string_append_printf(m->str, "  mA");
+    }
+
+    m->last_now = now;
   } else {
     g_string_printf(m->str, "%s!", m->battery_full_icon->str);
   }
+
 
   if (battery_now_file != NULL)
     fclose(battery_now_file);

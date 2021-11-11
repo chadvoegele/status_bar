@@ -21,6 +21,8 @@ struct battery_monitor {
   GString* battery_full_path_str;
   GString* battery_now_path_str;
   GString* battery_status_path_str;
+
+  int last_now;
 };
 
 void* battery_init(GArray*);
