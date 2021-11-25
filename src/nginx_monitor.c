@@ -67,7 +67,7 @@ gboolean nginx_update_text(void* ptr) {
   struct nginx_monitor* m = (struct nginx_monitor*)ptr;
   monitor_null_check(m, "nginx_monitor", "update");
 
-  download_data(m->http_data, m->request_str->str, nginx_http_callback, m, nginx_result_callback);
+  download_data(m->http_data, m->request_str->str, NULL, nginx_http_callback, m, nginx_result_callback);
 
   return TRUE;
 }

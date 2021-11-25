@@ -166,7 +166,7 @@ void http_free(struct http_data* http_data) {
   g_free(http_data);
 }
 
-CURLcode download_data(struct http_data* http_data, char* request_str, void* callback, void* userdata, void* result_callback) {
+CURLcode download_data(struct http_data* http_data, char* request_str, struct curl_slist* headers, void* callback, void* userdata, void* result_callback) {
   struct closure* closure = g_new(struct closure, 1);
   closure->function = result_callback;
   closure->data = userdata;
@@ -178,6 +178,9 @@ CURLcode download_data(struct http_data* http_data, char* request_str, void* cal
   curl_easy_setopt(easy_curl, CURLOPT_WRITEFUNCTION, callback);
   curl_easy_setopt(easy_curl, CURLOPT_WRITEDATA, userdata);
   curl_easy_setopt(easy_curl, CURLOPT_PRIVATE, closure);
+  if (headers != NULL) {
+    curl_easy_setopt(easy_curl, CURLOPT_HTTPHEADER, headers);
+  }
   curl_multi_add_handle(http_data->curl, easy_curl);
   return 1;
 }

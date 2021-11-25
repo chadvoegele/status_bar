@@ -66,7 +66,7 @@ gboolean sp500_update_text(void* ptr) {
     return TRUE;
   }
 
-  download_data(m->http_data, m->url->str, sp500_http_callback, m, sp500_result_callback);
+  download_data(m->http_data, m->url->str, NULL, sp500_http_callback, m, sp500_result_callback);
 
   return TRUE;
 }

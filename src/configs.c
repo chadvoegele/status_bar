@@ -25,6 +25,7 @@
 #include "users_monitor.h"
 #include "text_monitor.h"
 #include "sys_file_monitor.h"
+#include "syncthing_monitor.h"
 
 error_t parse_opt(int key, char *arg, struct argp_state *state) {
   char** config_file_ptr = (char**)state->input;
@@ -169,6 +170,8 @@ void* convert_string_to_monitor(char* str, GArray* arguments) {
     return text_init(arguments);
   } else if (strcmp("sys_file", str) == 0) {
     return sys_file_init(arguments);
+  } else if (strcmp("syncthing", str) == 0) {
+    return syncthing_init(arguments);
   } else {
     fprintf(stderr, "Monitor %s not found.\n", str);
     exit(EXIT_FAILURE);

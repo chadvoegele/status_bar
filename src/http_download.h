@@ -12,4 +12,4 @@ struct http_data {
 
 gpointer http_init();
 void http_free(struct http_data*);
-CURLcode download_data(struct http_data*, char*, void*, void*, void*);
+CURLcode download_data(struct http_data*, char*, struct curl_slist*, void*, void*, void*);
