@@ -170,6 +170,7 @@ char* convert_weather_text_to_icon(struct weather_monitor* m, char* weather_text
     return m->sun_icon->str;
   }
 
+  fprintf(stderr, "Unknown weather: %s\n", lower_weather_text);
   return "?";
 }
 
