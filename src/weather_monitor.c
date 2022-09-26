@@ -158,11 +158,11 @@ char* convert_weather_text_to_icon(struct weather_monitor* m, char* weather_text
     return m->snow_icon->str;
   }
 
-  if (strstr(lower_weather_text, "rain")) {
+  if (strstr(lower_weather_text, "rain") || strstr(lower_weather_text, "drizzle")) {
     return m->rain_icon->str;
   }
 
-  if (strstr(lower_weather_text, "cloudy")) {
+  if (strstr(lower_weather_text, "cloudy") || strstr(lower_weather_text, "overcast") ) {
     return m->cloudy_icon->str;
   }
 
