@@ -14,6 +14,12 @@
 #include "syncthing_monitor.h"
 #include "http_download.h"
 
+enum SyncthingState {
+  SYNCED,
+  SYNCING,
+  SCANNING
+};
+
 void* syncthing_init(GArray* arguments) {
   monitor_arg_check("syncthing", arguments, "(sync_down_icon, sync_up_icon, synced_icon, sync_error_icon)");
 
@@ -34,7 +40,7 @@ void* syncthing_init(GArray* arguments) {
   m->url = g_string_new(NULL);
   m->response_buffer = g_string_new(NULL);
   m->last_id = -1;
-  m->completion = -1;
+  m->output = g_string_new(NULL);
 
   return m;
 }
@@ -54,9 +60,11 @@ void set_headers(struct syncthing_monitor* m) {
 void syncthing_result_callback(CURLcode code, void* userdata) {
   struct syncthing_monitor* m = (struct syncthing_monitor*)userdata;
 
+  g_string_set_size(m->output, 0);
+
   if (code != CURLE_OK) {
       fprintf(stderr, "Invalid syncthing response code: %d\n", code);
-      m->base->text = g_string_assign(m->base->text, m->sync_error_icon->str);
+      m->base->text = g_string_assign(m->output, m->sync_error_icon->str);
       return;
   }
 
@@ -65,15 +73,15 @@ void syncthing_result_callback(CURLcode code, void* userdata) {
 
   if (!jv_is_valid(response)) {
     fprintf(stderr, "Invalid syncthing response: %*s\n", (int)m->response_buffer->len, m->response_buffer->str);
-    m->base->text = g_string_assign(m->base->text, m->sync_error_icon->str);
+    g_string_assign(m->output, m->sync_error_icon->str);
     jv_free(response);
     return;
   }
 
-  int len = jv_array_length(jv_copy(response));
-  if (len == 0) {
-    m->base->text = g_string_assign(m->base->text, m->synced_icon->str);
-  }
+  enum SyncthingState bar_state = SYNCED;
+
+  gboolean has_completion = FALSE;
+  float completion = 999.0;
 
   jv_array_foreach(response, i, vi) {
     jv vi_type = jv_object_get(jv_copy(vi), jv_string("type"));
@@ -83,12 +91,24 @@ void syncthing_result_callback(CURLcode code, void* userdata) {
       const char* state = jv_string_value(vi_to);
 
       if (strcmp("syncing", state) == 0) {
-        m->base->text = g_string_assign(m->base->text, m->sync_down_icon->str);
+        bar_state = SYNCING;
       } else if (strcmp("scanning", state) == 0) {
-        m->base->text = g_string_assign(m->base->text, m->sync_up_icon->str);
+        bar_state = SYNCED;
       }
 
       jv_free(vi_to);
+      jv_free(vi_data);
+    } else if (strcmp("FolderCompletion", jv_string_value(vi_type)) == 0) {
+      jv vi_data = jv_object_get(jv_copy(vi), jv_string("data"));
+      jv vi_completion = jv_object_get(jv_copy(vi_data), jv_string("completion"));
+
+      float this_completion = (float)jv_number_value(vi_completion);
+      has_completion = TRUE;
+      if (this_completion < completion) {
+        completion = this_completion;
+      }
+
+      jv_free(vi_completion);
       jv_free(vi_data);
     }
 
@@ -96,6 +116,20 @@ void syncthing_result_callback(CURLcode code, void* userdata) {
     jv_free(vi_type);
     jv_free(vi);
   }
+
+  if (bar_state == SYNCED) {
+    g_string_assign(m->output, m->synced_icon->str);
+  } else if (bar_state == SYNCING) {
+    g_string_assign(m->output, m->sync_down_icon->str);
+  } else if (bar_state == SCANNING) {
+    g_string_assign(m->output, m->sync_up_icon->str);
+  }
+
+  if (has_completion) {
+    g_string_append_printf(m->output, "%4.2f%%", completion);
+  }
+
+  m->base->text = g_string_assign(m->base->text, m->output->str);
 
   jv_free(response);
 }
@@ -134,6 +168,7 @@ void syncthing_free(void* ptr) {
   struct syncthing_monitor* m = (struct syncthing_monitor*)ptr;
   monitor_null_check(m, "syncthing_monitor", "free");
   g_string_free(m->url, TRUE);
+  g_string_free(m->output, TRUE);
   g_string_free(m->api_key_header, TRUE);
   g_string_free(m->response_buffer, TRUE);
 

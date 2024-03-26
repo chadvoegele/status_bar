@@ -25,7 +25,7 @@ struct syncthing_monitor {
   GString* api_key_header;
   int last_id;
   GString* url;
-  double completion;
+  GString* output;
 
   GString* response_buffer;
 };
