@@ -15,7 +15,7 @@
 #include "configs.h"
 
 void* weather_init(GArray* arguments) {
-  monitor_arg_check("weather", arguments, "(icon, location_key, sun_icon, cloudy_icon, rain_icon, storm_icon, snow_icon)");
+  monitor_arg_check("weather", arguments, "(icon, location_key, sun_icon, cloudy_icon, rain_icon, storm_icon, snow_icon, smoke_icon, fog_icon)");
 
   struct weather_monitor* m = malloc(sizeof(struct weather_monitor));
 
@@ -27,13 +27,15 @@ void* weather_init(GArray* arguments) {
   char* weather_loc = g_array_index(arguments, GString*, 1)->str;
 
   m->request_str = g_string_new(NULL);
-  g_string_printf(m->request_str, "https://w1.weather.gov/xml/current_obs/%s.xml", weather_loc);
+  g_string_printf(m->request_str, "https://forecast.weather.gov/xml/current_obs/%s.xml", weather_loc);
 
   m->sun_icon = g_string_new(g_array_index(arguments, GString*, 2)->str);
   m->cloudy_icon = g_string_new(g_array_index(arguments, GString*, 3)->str);
   m->rain_icon = g_string_new(g_array_index(arguments, GString*, 4)->str);
   m->storm_icon = g_string_new(g_array_index(arguments, GString*, 5)->str);
   m->snow_icon = g_string_new(g_array_index(arguments, GString*, 6)->str);
+  m->smoke_icon = g_string_new(g_array_index(arguments, GString*, 7)->str);
+  m->fog_icon = g_string_new(g_array_index(arguments, GString*, 8)->str);
 
   m->res = g_string_new(NULL);
   m->http_data = http_init();
@@ -99,6 +101,8 @@ void weather_free(void* ptr) {
   g_string_free(m->rain_icon, TRUE);
   g_string_free(m->storm_icon, TRUE);
   g_string_free(m->snow_icon, TRUE);
+  g_string_free(m->smoke_icon, TRUE);
+  g_string_free(m->fog_icon, TRUE);
 
   base_monitor_free(m->base);
 
@@ -150,6 +154,7 @@ int format_output(struct weather_monitor* m, GString* res) {
 
 char* convert_weather_text_to_icon(struct weather_monitor* m, char* weather_text) {
   char* lower_weather_text = strlower(weather_text);
+
   if (strstr(lower_weather_text, "storm")) {
     return m->storm_icon->str;
   }
@@ -168,6 +173,14 @@ char* convert_weather_text_to_icon(struct weather_monitor* m, char* weather_text
 
   if (strstr(lower_weather_text, "sun") || strstr(lower_weather_text, "fair")) {
     return m->sun_icon->str;
+  }
+
+  if (strstr(lower_weather_text, "smoke")) {
+    return m->smoke_icon->str;
+  }
+
+  if (strstr(lower_weather_text, "fog") || strstr(lower_weather_text, "mist")) {
+    return m->fog_icon->str;
   }
 
   fprintf(stderr, "Unknown weather: %s\n", lower_weather_text);

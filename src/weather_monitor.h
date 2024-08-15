@@ -20,6 +20,8 @@ struct weather_monitor {
   GString* rain_icon;
   GString* storm_icon;
   GString* snow_icon;
+  GString* smoke_icon;
+  GString* fog_icon;
 
   GString* res;
   char* err;
