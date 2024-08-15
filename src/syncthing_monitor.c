@@ -117,12 +117,12 @@ void syncthing_result_callback(CURLcode code, void* userdata) {
     jv_free(vi);
   }
 
-  if (bar_state == SYNCED) {
-    g_string_assign(m->output, m->synced_icon->str);
+  if (bar_state == SCANNING || has_completion) {
+    g_string_assign(m->output, m->sync_up_icon->str);
   } else if (bar_state == SYNCING) {
     g_string_assign(m->output, m->sync_down_icon->str);
-  } else if (bar_state == SCANNING) {
-    g_string_assign(m->output, m->sync_up_icon->str);
+  } else if (bar_state == SYNCED) {
+    g_string_assign(m->output, m->synced_icon->str);
   }
 
   if (has_completion) {
