@@ -16,7 +16,7 @@ SRC=$(wildcard ${SRCDIR}/*.c)
 OBJS=$(patsubst ${SRCDIR}/%.c,${BINDIR}/%.o,$(SRC))
 
 ${BINDIR}/${PROG_NAME}: ${OBJS}
-	@${CXX} ${LIBS} ${OBJS} -o $@
+	@${CXX} ${OBJS} ${LIBS} -o $@
 
 $(OBJS): $(BINDIR)/%.o : $(SRCDIR)/%.c
 	@mkdir -p ${BINDIR}
